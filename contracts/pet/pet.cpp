@@ -105,6 +105,16 @@ void pet::destroypet(uuid pet_id) {
 
 }
 
+void pet::transferpet(uuid pet_id, name newowner) {
+    const auto& pet = pets.get(pet_id, "E404|Invalid pet");
+    
+    require_auth(pet.owner);
+    eosio_assert(pet.owner != newowner);
+
+    pet.modify(pet, newowner, [](auto &r) {});
+}
+
+
 void pet::feedpet(uuid pet_id) {
 
     auto itr_pet = pets.find(pet_id);
