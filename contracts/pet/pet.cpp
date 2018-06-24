@@ -111,9 +111,21 @@ void pet::transferpet(uuid pet_id, name newowner) {
     require_auth(pet.owner);
     eosio_assert(pet.owner != newowner);
 
-    pet.modify(pet, newowner, [](auto &r) {});
+    pet.modify(pet, newowner, [&](auto &r) {
+        r.new_owner = newowner;
+    });
 }
 
+void pet::claimpet(uuid pet_id) {
+    const auto& pet= pets.get(pet_id, "E404|Invalid pet");
+
+    require_auth(pet.new_owner);
+    
+    pet.modify(pet, pet.new_owner, [&](auto &r) {
+        r.new_owner = null;
+        r.owner = pet.new_owner;
+    });
+}
 
 void pet::feedpet(uuid pet_id) {
 

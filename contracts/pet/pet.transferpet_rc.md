@@ -9,9 +9,8 @@ Input parameters:
 * `newowner` (name of new owner)
 
 ### Intent
-INTENT. The intent of the `{{ transferpet }}` action is to transfer ownership of the given monster to {{ newowner }}. Consequently move the cost for RAM of the monster to {{ newowner }}.
+INTENT. The intent of the `{{ transferpet }}` action is to transfer ownership of the given monster to {{ newowner }}. Consequently move the cost for RAM of the monster to {{ newowner }}. The ownership transfer has to be confirmed by {{ newowner }} using the `{{ claim }}` action.
 
-I {{ signer }} confirm that the {{ newowner }} agreed to take care of the monster and to pay for the RAM needed (295 bytes).
 
 ### Term
-TERM. This Contract expires after code execution.
+TERM. This Contract expires after {{newowner}} has claimed the ownership or a new `{{ transferpet }}` action was called for the same monster.
