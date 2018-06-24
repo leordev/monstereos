@@ -52,6 +52,7 @@ public:
     void createpet(name owner, string pet_name);
     void destroypet(uuid pet_id);
     void transferpet(uuid pet_id, name newowner);
+    void claimpet(uuid pet_id);
     void transfer(uint64_t sender, uint64_t receiver);
     void changecrtol(uint32_t new_interval);
     void changecrfee(asset new_fee);
@@ -77,6 +78,7 @@ public:
     struct st_pets {
         uuid id;
         name owner;
+        name new_owner;
         string name;
         uint8_t type;
         uint32_t created_at;

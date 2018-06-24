@@ -90,7 +90,7 @@ void pet::updatepet(uuid pet_id) {
 
     _update(pet);
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
     });
 }
@@ -109,22 +109,28 @@ void pet::transferpet(uuid pet_id, name newowner) {
     const auto& pet = pets.get(pet_id, "E404|Invalid pet");
     
     require_auth(pet.owner);
-    eosio_assert(pet.owner != newowner);
+    eosio_assert(pet.owner != newowner, "new owner must be different than current owner");
 
-    pet.modify(pet, newowner, [&](auto &r) {
+    pets.modify(pet, pet.owner, [&](auto &r) {
         r.new_owner = newowner;
     });
+
+    print("new owner can become ", newowner);
 }
 
 void pet::claimpet(uuid pet_id) {
     const auto& pet= pets.get(pet_id, "E404|Invalid pet");
 
-    require_auth(pet.new_owner);
-    
-    pet.modify(pet, pet.new_owner, [&](auto &r) {
-        r.new_owner = null;
-        r.owner = pet.new_owner;
+    const name newowner = pet.new_owner;
+    eosio_assert(newowner != (const name) {0}, "E404|Pet not ready for transfer");
+    require_auth(newowner);
+
+    pets.modify(pet, pet.new_owner, [&](auto &r) {
+        r.owner = newowner;
+        r.new_owner = (const name) {0};
     });
+
+    print("new owner set to ", newowner);
 }
 
 void pet::feedpet(uuid pet_id) {
@@ -137,7 +143,7 @@ void pet::feedpet(uuid pet_id) {
 
     st_pet_config pc = _get_pet_config();
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
 
         uint32_t current_time = now();
@@ -169,7 +175,7 @@ void pet::bedpet(uuid pet_id) {
 
     st_pet_config pc = _get_pet_config();
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
 
         uint32_t current_time = now();
@@ -199,7 +205,7 @@ void pet::awakepet(uuid pet_id) {
 
     st_pet_config pc = _get_pet_config();
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
 
         uint32_t current_time = now();
@@ -332,7 +338,7 @@ pet::st_pet_config pet::_get_pet_config(){
 // and EOSIO_ABI_EX to generate the listener action
 // https://eosio.stackexchange.com/q/421/54
 
-// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(changecrtol)(changecrfee)(transfer))
+// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(transferpet)(claimpet)(changecrtol)(changecrfee)(transfer))
 
 #define EOSIO_ABI_EX( TYPE, MEMBERS ) \
 extern "C" { \
@@ -360,6 +366,8 @@ EOSIO_ABI_EX(pet,
     (bedpet)
     (awakepet)
     (destroypet)
+    (transferpet)
+    (claimpet)
 
     // config setup
     (changecrtol)
