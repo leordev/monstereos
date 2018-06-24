@@ -45,6 +45,7 @@ initialModel =
     , scatterInstallPressed = False
     , showHelp = False
     , showMonsterCreation = False
+    , showMonsterTransfer = False
     , user = User "" ""
     , error = Nothing
     , content = Home
@@ -52,6 +53,8 @@ initialModel =
     , currentTime = 0
     , monsters = []
     , newMonsterName = ""
+    , petIdForTransfer = 0
+    , newOwnerAccount = ""
     , notifications = []
     , wallet = Wallet 0
     , depositAmount = 3
@@ -153,6 +156,7 @@ initialConfig =
 type alias Monster =
     { id : Int
     , owner : String
+    , new_owner: String
     , name : String
     , mtype : Int
     , created_at : Time.Time
@@ -187,6 +191,7 @@ type alias Model =
     , isMuted : Bool
     , showHelp : Bool
     , showMonsterCreation : Bool
+    , showMonsterTransfer : Bool
     , scatterInstalled : Bool
     , scatterInstallPressed : Bool
     , user : User
@@ -196,6 +201,8 @@ type alias Model =
     , currentTime : Time.Time
     , monsters : List Monster
     , newMonsterName : String
+    , petIdForTransfer: Int
+    , newOwnerAccount : String
     , notifications : List Notification
     , wallet : Wallet
     , showWallet : Bool
@@ -333,6 +340,17 @@ port awakeSucceed : (String -> msg) -> Sub msg
 
 port awakeFailed : (String -> msg) -> Sub msg
 
+port submitNewOwner : (Int, String) -> Cmd msg
+
+port transferSucceed : (String -> msg) -> Sub msg
+
+port transferFailed : (String -> msg) -> Sub msg
+
+port requestClaim : Int -> Cmd msg
+
+port claimSucceed : (String -> msg) -> Sub msg
+
+port claimFailed : (String -> msg) -> Sub msg
 
 port setScatterInstalled : (Bool -> msg) -> Sub msg
 
@@ -375,6 +393,10 @@ subscriptions model =
         , deleteSucceed MonsterDeleteSucceed
         , monsterCreationSucceed MonsterCreationSucceed
         , monsterCreationFailed MonsterCreationFailed
+        , transferSucceed MonsterTransferSucceed
+        , transferFailed MonsterTransferFailed
+        , claimSucceed MonsterClaimSucceed
+        , claimFailed MonsterClaimFailed
         ]
 
 
@@ -417,6 +439,14 @@ type Msg
     | RequestMonsterAwake Int
     | RequestMonsterDelete Int
     | RequestMonsterWash Int
+    | RequestMonsterTransfer Int
+    | UpdateNewOwnerAccount String
+    | SubmitTransferMonster
+    | MonsterTransferSucceed String
+    | MonsterTransferFailed String 
+    | MonsterClaimSucceed String
+    | MonsterClaimFailed String
+    | RequestMonsterClaim Int
     | UpdateNewMonsterName String
     | SubmitNewMonster
     | UpdateDepositAmount String
@@ -425,6 +455,7 @@ type Msg
     | ToggleHelp
     | ToggleWallet
     | ToggleMonsterCreation
+    | ToggleMonsterTransfer
     | DeleteNotification String
     | Logout
 
@@ -559,6 +590,26 @@ update msg model =
         MonsterCreationFailed err ->
             handleMonsterAction model err "Create" False
 
+        RequestMonsterTransfer petId -> 
+           ( { model 
+               | showMonsterTransfer = True 
+               , petIdForTransfer = petId
+           }, Cmd.none ) 
+
+        MonsterTransferSucceed trxId -> 
+            handleMonsterAction model trxId "Transfer" True
+
+        MonsterTransferFailed err -> 
+            handleMonsterAction model err "Transfer" True  
+
+        RequestMonsterClaim petId -> 
+           ( { model | isLoading = True }, requestClaim (petId) ) 
+
+        MonsterClaimSucceed trxId -> 
+            handleMonsterAction model trxId "Claim" True
+        MonsterClaimFailed err -> 
+            handleMonsterAction model err "Claim" True  
+
         ScatterSignIn userJson ->
             case (JD.decodeValue userDecoder userJson) of
                 Ok user ->
@@ -677,6 +728,12 @@ update msg model =
         SubmitNewMonster ->
             ( { model | isLoading = True }, submitNewMonster (model.newMonsterName) )
 
+        UpdateNewOwnerAccount newOwner -> 
+            ( { model | newOwnerAccount = newOwner}, Cmd.none)
+
+        SubmitTransferMonster -> 
+        ({model | isLoading = True}, submitNewOwner(model.petIdForTransfer, model.newOwnerAccount) )
+
         UpdateDepositAmount txtAmount ->
             ( { model
                 | depositAmount =
@@ -712,6 +769,14 @@ update msg model =
             ( { model
                 | newMonsterName = ""
                 , showMonsterCreation = (not model.showMonsterCreation)
+              }
+            , Cmd.none
+            )
+        
+        ToggleMonsterTransfer -> 
+            ( { model
+                | newOwnerAccount = ""
+                , showMonsterTransfer = (not model.showMonsterTransfer)
               }
             , Cmd.none
             )
@@ -851,6 +916,7 @@ monstersDecoder =
         (JDP.decode Monster
             |> JDP.required "id" JD.int
             |> JDP.required "owner" JD.string
+            |> JDP.required "new_owner" JD.string
             |> JDP.required "name" JD.string
             |> JDP.required "type" JD.int
             |> JDP.required "created_at" JD.float
@@ -1206,6 +1272,34 @@ walletModal model =
             (Just ( "Add Funds", SubmitDeposit ))
             (Just ( "Cancel", ToggleWallet ))
 
+monsterTransferModal : Model -> Html Msg
+monsterTransferModal model =
+    let
+        modalClass =
+            if model.showHelp then
+                "modal is-active"
+            else
+                "modal"
+
+        scatterInstalled =
+            model.scatterInstalled
+    in
+        modalCard model
+            "Transfer Monster "
+            ToggleMonsterTransfer
+            [ form []
+                [ fieldInput
+                    model
+                    "New owner"
+                    model.newOwnerAccount
+                    "monstereosio"
+                    "user"
+                    UpdateNewOwnerAccount
+                ]
+            ]
+            (Just ( "Submit", SubmitTransferMonster ))
+            (Just ( "Cancel", ToggleMonsterTransfer ))
+
 
 helpModal : Model -> Html Msg
 helpModal model =
@@ -1463,8 +1557,8 @@ aboutContent model =
         ]
 
 
-monsterCard : Monster -> Time.Time -> Bool -> Bool -> Html Msg
-monsterCard monster currentTime isLoading readOnly =
+monsterCard : Monster -> Time.Time -> Bool -> Bool -> Bool -> Html Msg
+monsterCard monster currentTime isLoading readOnly canBeClaimed =
     let
         isDead =
             monster.death_at > 0 || monster.health <= 0
@@ -1515,7 +1609,15 @@ monsterCard monster currentTime isLoading readOnly =
                             ]
                             [ text "Wake Up!" ]
                         ]
-                     else
+                    else if canBeClaimed then 
+                        [ a
+                            [ class "card-footer-item"
+                            , onClick (RequestMonsterClaim monster.id)
+                            , disabledAttribute isLoading
+                            ]
+                            [ text "Claim" ]
+                        ]
+                    else 
                         [ a
                             [ class "card-footer-item"
                             , onClick (RequestMonsterFeed monster.id)
@@ -1540,7 +1642,13 @@ monsterCard monster currentTime isLoading readOnly =
                             , disabledAttribute isLoading
                             ]
                             [ text "Bed Time!" ]
-                        ]
+                        , a
+                            [ class "card-footer-item"
+                            , onClick (RequestMonsterTransfer monster.id)
+                            , disabledAttribute isLoading
+                            ]
+                            [ text "Transfer" ]
+                        ] 
                     )
                 )
     in
@@ -1616,8 +1724,8 @@ monsterContent model =
     let
         myMonsters =
             (model.monsters
-                |> List.filter (\monster -> monster.owner == model.user.eosAccount)
-                |> List.map (\monster -> monsterCard monster model.currentTime model.isLoading False)
+                |> List.filter (\monster -> monster.owner == model.user.eosAccount || monster.new_owner == model.user.eosAccount)
+                |> List.map (\monster -> monsterCard monster model.currentTime model.isLoading False (monster.new_owner == model.user.eosAccount))
             )
 
         newMonsterMsg =
@@ -1686,7 +1794,7 @@ rankContent model =
             monsters
                 |> List.drop (pageSize * model.currentRankPage)
                 |> List.take pageSize
-                |> List.map (\monster -> monsterCard monster model.currentTime model.isLoading True)
+                |> List.map (\monster -> monsterCard monster model.currentTime model.isLoading True False)
     in
         div []
             [ titleMenu "Eldest Alive Monsters" [ pagination ]

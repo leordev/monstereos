@@ -315,6 +315,43 @@ app.ports.requestWash.subscribe(async (petId) => {
   app.ports.feedSucceed.send('lazy developer must build "Wash" action')
 })
 
+app.ports.submitNewOwner.subscribe(async (petId, newOwner) => {
+  const auth = getAuthorization()
+
+  const contract = await getContract()
+
+  const transferpet = await contract.transferpet(petId, newOwner)
+    .catch(e => {
+        console.error('error on transferring pet ', e)
+        const errorMsg = (e && e.message) ||
+        'An error happened while attempting to transferring the monster'
+        app.ports.transferFailed.send(errorMsg)
+      })
+
+  console.log(transferpet)
+
+  if(transferpet) app.ports.transferSucceed.send(transferpet.transaction_id)
+})
+
+
+app.ports.requestClaim.subscribe(async (petId) => {
+  const auth = getAuthorization()
+
+  const contract = await getContract()
+
+  const claimpet = await contract.claimpet(petId)
+    .catch(e => {
+        console.error('error on claiming pet ', e)
+        const errorMsg = (e && e.message) ||
+        'An error happened while attempting to claim the monster'
+        app.ports.claimFailed.send(errorMsg)
+      })
+
+  console.log(claimpet)
+
+  if(claimpet) app.ports.claimSucceed.send(transferpet.transaction_id)
+})
+
 /**
  * We should've probably parse the monster inside ELM, but as javascript
  * is the most widely used among the community we decided to leave this
