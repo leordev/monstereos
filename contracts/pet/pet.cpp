@@ -1,22 +1,10 @@
 #include "pet.hpp"
-
 #include "lib/utils.hpp"
+#include "lib/pet.admin.cpp"
+#include "lib/pet.battle.cpp"
 
 using namespace utils;
-
-void pet::changecrtol(uint32_t new_interval) {
-    require_auth(_self);
-    st_pet_config pc = _get_pet_config();
-    pc.creation_tolerance = new_interval;
-    pet_config.set(pc, _self);
-}
-
-void pet::changecrfee(asset new_fee) {
-    require_auth(_self);
-    st_pet_config pc = _get_pet_config();
-    pc.creation_fee = new_fee;
-    pet_config.set(pc, _self);
-}
+using namespace types;
 
 void pet::createpet(name owner,
                 string pet_name) {
@@ -34,7 +22,7 @@ void pet::createpet(name owner,
     // eosio_assert(!_pet_name_exists(pet_name), "duplicated pet name");
 
     // initialize config
-    st_pet_config pc = _get_pet_config();
+    auto pc = _get_pet_config();
 
     // check last pet creation tolerance
     if (pc.creation_tolerance > 0) {
@@ -74,7 +62,7 @@ void pet::createpet(name owner,
         pet.last_shower_at = pet.created_at;
         pet.last_awake_at = 0;
 
-        pet.type = (_hash_str(pet_name) + pet.created_at + pet.id + owner) % PET_TYPES;
+        pet.type = (hash_str(pet_name) + pet.created_at + pet.id + owner) % pc.last_pet_type_id;
 
         r = pet;
     });
@@ -107,7 +95,7 @@ void pet::destroypet(uuid pet_id) {
 
 void pet::transferpet(uuid pet_id, name newowner) {
     const auto& pet = pets.get(pet_id, "E404|Invalid pet");
-    
+
     require_auth(pet.owner);
     eosio_assert(pet.owner != newowner, "new owner must be different than current owner");
 
@@ -141,7 +129,7 @@ void pet::feedpet(uuid pet_id) {
 
     _update(pet);
 
-    st_pet_config pc = _get_pet_config();
+    auto pc = _get_pet_config();
 
     pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
@@ -173,7 +161,7 @@ void pet::bedpet(uuid pet_id) {
 
     _update(pet);
 
-    st_pet_config pc = _get_pet_config();
+    auto pc = _get_pet_config();
 
     pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
@@ -203,7 +191,7 @@ void pet::awakepet(uuid pet_id) {
 
     _update(pet);
 
-    st_pet_config pc = _get_pet_config();
+    auto pc = _get_pet_config();
 
     pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
@@ -261,15 +249,16 @@ void pet::transfer(uint64_t sender, uint64_t receiver) {
     print("\n", name{transfer_data.from}, " funds available: ", new_balance);
 }
 
-uint32_t pet::_calc_hunger_hp(const st_pet_config &pc, const uint32_t &last_fed_at, const uint32_t &current_time) {
+uint32_t pet::_calc_hunger_hp(const uint8_t &max_hunger_points, const uint32_t &hunger_to_zero,
+    const uint8_t &hunger_hp_modifier, const uint32_t &last_fed_at, const uint32_t &current_time) {
     // how long it's hungry?
     uint32_t hungry_seconds = current_time - last_fed_at;
-    uint32_t hungry_points = hungry_seconds * pc.max_hunger_points / pc.hunger_to_zero;
+    uint32_t hungry_points = hungry_seconds * max_hunger_points / hunger_to_zero;
 
     // calculates the effective hunger on hp, if pet hunger is 0
     uint32_t effect_hp_hunger = 0;
-    if (hungry_points >= pc.max_hunger_points) {
-        effect_hp_hunger = (hungry_points - pc.max_hunger_points) / pc.hunger_hp_modifier;
+    if (hungry_points >= max_hunger_points) {
+        effect_hp_hunger = (hungry_points - max_hunger_points) / hunger_hp_modifier;
     }
 
     print("\npet hungry_points=", hungry_points);
@@ -282,11 +271,13 @@ void pet::_update(st_pets &pet) {
 
     eosio_assert(pet.is_alive(), "E099|Pet is dead.");
 
-    st_pet_config pc = _get_pet_config();
+    auto pc = _get_pet_config();
 
     uint32_t current_time = now();
 
-    uint32_t effect_hp_hunger = _calc_hunger_hp(pc, pet.last_fed_at, current_time);
+    uint32_t effect_hp_hunger = _calc_hunger_hp(pc.max_hunger_points,
+        pc.hunger_to_zero, pc.hunger_hp_modifier,
+        pet.last_fed_at, current_time);
 
     int32_t hp = pc.max_health - effect_hp_hunger;
 
@@ -298,47 +289,12 @@ void pet::_update(st_pets &pet) {
     }
 }
 
-bool pet::_pet_name_exists(string pet_name) {
-    // horrible iteration through the whole pets table to find a duplication
-    // need to create an integer hashfield and create an index for that
-    // in pets table
-    for (const auto& pet : pets) {
-        if(pet_name == pet.name) return true;
-    }
-
-    return false;
-}
-
-uint64_t pet::_hash_str(const string &str) {
-    return hash<string>{}(str);
-}
-
-uuid pet::_next_id(){
-    st_pet_config pc = _get_pet_config();
-    pc.last_id++;
-    pet_config.set(pc, _self);
-    return pc.last_id;
-}
-
-pet::st_pet_config pet::_get_pet_config(){
-    st_pet_config pc;
-
-    if (pet_config.exists()) {
-        pc = pet_config.get();
-    }  else {
-        pc = st_pet_config{};
-        pet_config.set(pc, _self);
-    }
-
-    return pc;
-}
-
 // we need to sacrifice abi generation for recipient listener
 // keep alternating the comments between EOSIO_ABI (to generate ABI)
 // and EOSIO_ABI_EX to generate the listener action
 // https://eosio.stackexchange.com/q/421/54
 
-// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(transferpet)(claimpet)(changecrtol)(changecrfee)(transfer))
+// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(transferpet)(claimpet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer))
 
 #define EOSIO_ABI_EX( TYPE, MEMBERS ) \
 extern "C" { \
@@ -369,9 +325,26 @@ EOSIO_ABI_EX(pet,
     (transferpet)
     (claimpet)
 
-    // config setup
+    // battles
+    (battlecreate)
+    (battlejoin)
+    (battleleave)
+    (battlestart)
+    (battleselpet)
+    (battleattack)
+    (battlefinish)
+
+    // admins and config setup
+    (addelemttype)
+    (changeelemtt)
+    (addpettype)
+    (changepettyp)
     (changecrtol)
-    (changecrfee)
+    (changebatma)
+    (changebatidt)
+    (changebatami)
+    (changebatama)
 
     // tokens deposits
-    (transfer))
+    (transfer)
+)

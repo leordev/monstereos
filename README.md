@@ -20,6 +20,8 @@ Monsters Pictures Package: Itch.io @Pipoya - Free RPG Monster Pack
 
 Sleeping GIF Credits: Giphy @AlabasterPizzo
 
+Arena Background Credits: Freebies from craftpix.net - license here: https://craftpix.net/file-licenses/
+
 ## Disclaimer
 
 This project remains purely experimental software and is not to be considered in any way production fit nor has any guarantee of any kind. Use at your own risk.

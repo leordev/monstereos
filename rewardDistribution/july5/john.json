@@ -1,0 +1,31 @@
+{
+    "teamMemberId": 1,
+    "eosAccount": "",
+    "timeEntries": [
+        {
+            "timeSpent": 0.5,
+            "weight": 1,
+            "notes": "Making distribution software"
+        },
+        {
+            "timeSpent": 0.75,
+            "weight": 1,
+            "notes": "Meeting with Vertex"
+        }, 
+        {
+            "timeSpent": 0.25,
+            "weight": 1,
+            "notes": "Meeting with Leo"
+        }, 
+        {
+            "timeSpent": 0.25, 
+            "weight": 1,
+            "notes": "Was engaged for meeting with Leo, pushed back for battle system release"
+        }, 
+        {
+            "timeSpent": 1,
+            "weight": 1,
+            "notes": "Meeting with LSM, engaged Leo and updated, created GH issue"
+        }
+    ]
+}

@@ -13,5 +13,14 @@ namespace utils {
         }
         return spaces;
     }
+
+    bool is_zero(const checksum256& a) {
+        const uint64_t *p64 = reinterpret_cast<const uint64_t*>(&a);
+        return p64[0] == 0 && p64[1] == 0 && p64[2] == 0 && p64[3] == 0;
+    }
+
+    uint64_t hash_str(const string &str) {
+        return hash<string>{}(str);
+    }
 }
 

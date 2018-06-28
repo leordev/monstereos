@@ -8,14 +8,193 @@
 
 @import "./spacing.scss";
 
+// monster images filters
+// dead monsters must be grayscaled
+@mixin filter($filter-type,$filter-amount) {
+  -webkit-filter: $filter-type+unquote('(#{$filter-amount})');
+  -moz-filter: $filter-type+unquote('(#{$filter-amount})');
+  -ms-filter: $filter-type+unquote('(#{$filter-amount})');
+  -o-filter: $filter-type+unquote('(#{$filter-amount})');
+  filter: $filter-type+unquote('(#{$filter-amount})');
+}
+
+@mixin grayscale_element($value) {
+    -webkit-filter: #{"grayscale(#{$value})"};
+    -moz-filter: #{"grayscale(#{$value})"};
+    filter:#{"grayscale(#{$value})"};
+}
+
+@mixin arena_bg($value) {
+    background: url('../public/images/arenas/#{$value}.png') no-repeat center center;
+    background-size: cover;
+}
+
+// hp animation
+@keyframes slideInFromBottom {
+  0% {
+    transform: translateY(150%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.button.is-purple {
+  background-color: $purple;
+  color: white;
+}
+
+.button.is-brown {
+  background-color: #D2691E;
+  color: white;
+}
+
+.grayscale {
+    @include grayscale_element(100%);
+    transition: all 200ms ease-in-out;
+    opacity: 0.3;
+    &:hover {
+        @include grayscale_element(30%);
+    }
+}
+
+.sleeping {
+  @include filter(brightness, 5%);
+}
+
+// design/layout
+$logo-font: 'Freckle Face', cursive;
+
 .logo {
-  font-family: 'Freckle Face', cursive;
+  font-family: $logo-font;
   font-size: 40px;
   margin: 24px;
 }
 
 .navbar-item.is-active {
   color: $blue!important;
+}
+
+.monster-picks {
+  small {
+    margin-left: 15px;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .player-monsters {
+    display: flex;
+    flex-wrap: wrap;
+
+    .monster-pick {
+      max-width: 140px;
+      max-height: 140px;
+      margin: 18px;
+      @include filter(brightness, 80%);
+
+      &:hover, &.active {
+        border: 2px solid $green;
+        border-radius: 5%;
+        cursor: pointer;
+        @include filter(brightness, 100%);
+      }
+    }
+  }
+
+}
+
+.monster-hp-name {
+  position: absolute;
+  margin-top: -25px;
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.battle-actions {
+  height: 30px;
+}
+
+.battle-arena {
+  width: 1020px;
+  height: 600px;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: gray no-repeat center center fixed;
+  background-size: cover;
+
+  .elements {
+    margin-left: 14px;
+  }
+
+    &.arena-0 { @include arena_bg('0'); }
+    &.arena-1 { @include arena_bg('1'); }
+    &.arena-2 { @include arena_bg('2'); }
+    &.arena-3 { @include arena_bg('3'); }
+    &.arena-4 { @include arena_bg('4'); }
+    &.arena-5 { @include arena_bg('5'); }
+    &.arena-6 { @include arena_bg('6'); }
+    &.arena-7 { @include arena_bg('7'); }
+    &.arena-8 { @include arena_bg('8'); }
+    &.arena-9 { @include arena_bg('9'); }
+    &.arena-10 { @include arena_bg('10'); }
+    &.arena-11 { @include arena_bg('11'); }
+    &.arena-12 { @include arena_bg('12'); }
+    &.arena-13 { @include arena_bg('13'); }
+    &.arena-14 { @include arena_bg('14'); }
+    &.arena-15 { @include arena_bg('15'); }
+    &.arena-16 { @include arena_bg('16'); }
+    &.arena-17 { @include arena_bg('17'); }
+
+  .arena-monster {
+    margin-top: 200px;
+    max-width: 200px;
+    max-height: 200px;
+
+    figure {
+      max-height: 180px;
+      max-width: 180px;
+    }
+
+    progress {
+      margin-bottom: 6px!important;
+    }
+
+    .monster-hp-notification {
+      color: $red;
+      font-weight: bold;
+      font-family: $logo-font;
+      font-size: 30px;
+      margin-left: 40px;
+      margin-top: -180px;
+      position: absolute;
+      text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+      animation: 2s ease-out 0s 1 slideInFromBottom;
+    }
+  }
+
+  .battle-winner-banner {
+    position: absolute;
+    z-index: 999;
+    font-weight: bold;
+    font-family: $logo-font;
+    font-size: 92px;
+    margin: auto;
+    margin-top: -100px;
+    text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+  }
+
+  .enemy-monster {
+    cursor: pointer;
+
+    &:hover, &.active {
+      border: 2px solid $red;
+      border-radius: 5%;
+    }
+  }
 }
 
 // layout
@@ -50,34 +229,6 @@ form {
     min-width: 500px;
     max-width: 550px;
   }
-}
-
-// dead monsters must be grayscaled
-@mixin filter($filter-type,$filter-amount) {
-  -webkit-filter: $filter-type+unquote('(#{$filter-amount})');
-  -moz-filter: $filter-type+unquote('(#{$filter-amount})');
-  -ms-filter: $filter-type+unquote('(#{$filter-amount})');
-  -o-filter: $filter-type+unquote('(#{$filter-amount})');
-  filter: $filter-type+unquote('(#{$filter-amount})');
-}
-
-@mixin grayscale_element($value) {
-    -webkit-filter: #{"grayscale(#{$value})"};
-    -moz-filter: #{"grayscale(#{$value})"};
-    filter:#{"grayscale(#{$value})"};
-}
-
-.grayscale {
-    @include grayscale_element(100%);
-    transition: all 200ms ease-in-out;
-    opacity: 0.3;
-    &:hover {
-        @include grayscale_element(30%);
-    }
-}
-
-.sleeping {
-  @include filter(brightness, 5%);
 }
 
 .monster-image {

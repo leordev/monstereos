@@ -1,0 +1,11 @@
+{
+    "teamMemberId": 1,
+    "eosAccount": "",
+    "timeEntries": [
+        {
+            "timeSpent": 0.5,
+            "weight": 1,
+            "notes": "Meeting"
+        }
+    ]
+}

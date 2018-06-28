@@ -35,6 +35,34 @@
     "ratio": "cpp",
     "tuple": "cpp",
     "type_traits": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "initializer_list": "cpp",
+    "utility": "cpp",
+    "hashtable": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "typeindex": "cpp",
+    "__functional_base_03": "cpp",
+    "__tuple": "cpp",
+    "dynarray": "cpp",
+    "regex": "cpp",
+    "valarray": "cpp",
+    "filesystem": "cpp",
+    "propagate_const": "cpp",
+    "any": "cpp",
+    "ios": "cpp",
+    "forward_list": "cpp",
+    "variant": "cpp",
+    "__mutex_base": "cpp",
+    "shared_mutex": "cpp"
+  },
+  "terminal.integrated.env.osx": {
+    "SFDX_SET_CLIENT_IDS": "sfdx-vscode"
+  },
+  "terminal.integrated.env.linux": {
+    "SFDX_SET_CLIENT_IDS": "sfdx-vscode"
+  },
+  "terminal.integrated.env.windows": {
+    "SFDX_SET_CLIENT_IDS": "sfdx-vscode"
   }
 }

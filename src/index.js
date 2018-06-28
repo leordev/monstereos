@@ -2,28 +2,42 @@ import './main.css';
 import { Main } from './Main.elm';
 import registerServiceWorker from './registerServiceWorker';
 import Eos from 'eosjs'
+import ecc from 'eosjs-ecc'
 
 const STORAGE_KEY = 'MONSTEREOS'
 const CHAIN_PROTOCOL = 'http'
-const CHAIN_HOST = 'mainnet.eoscalgary.io'
-const CHAIN_PORT = 80
+const CHAIN_HOST = 'br.eosrio.io' //'mainnet.eoscalgary.io'
+const CHAIN_PORT = '8080' //80
 const CHAIN_ADDRESS = CHAIN_PROTOCOL + '://' + CHAIN_HOST + ':' + CHAIN_PORT
 const CHAIN_ID = 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906'
 const MONSTERS_ACCOUNT = 'monstereosio'
 const MONSTERS_TABLE = 'pets'
-const CONFIG_TABLE = 'petconfig'
+const BATTLES_TABLE = 'battles'
+const ELEMENTS_TABLE = 'elements'
+const PET_TYPES_TABLE = 'pettypes'
+const CONFIG_TABLE = 'petconfig2'
 const BALANCES_TABLE = 'accounts'
 const TOKEN_SYMBOL = 'EOS'
 const MEMO = 'MonsterEOS Wallet Deposit'
 
+// resources
+const BATTLE_REQ_CPU = 30 * 1000
+const BATTLE_REQ_NET = 2 * 1000
+
+const initialHashInfo = { mouseMove: [], lastPair: null }
+const initialUser = { eosAccount: "", publicKey: "" }
+const initialStorageBody = { user: initialUser, hashInfo: null }
+
 const storageBody = localStorage.getItem(STORAGE_KEY)
-const flags = !storageBody ?
-  { user: { eosAccount: "", publicKey: "" } } : JSON.parse(storageBody)
+const flags = !storageBody ? initialStorageBody : JSON.parse(storageBody)
+
+console.log(flags)
 
 const app = Main.embed(document.getElementById('root'), flags)
 
 /* Eos and Scatter Setup */
 const network = {
+  protocol: CHAIN_PROTOCOL,
   blockchain: 'eos',
   host: CHAIN_HOST,
   port: CHAIN_PORT,
@@ -33,12 +47,30 @@ const localNet = Eos({httpEndpoint: CHAIN_ADDRESS, chainId: CHAIN_ID})
 
 let scatter = null
 let globalConfigs = null
+let hashInfo = initialHashInfo
 
 const scatterDetection = setTimeout(() => {
   if (scatter == null) {
     app.ports.setScatterInstalled.send(false)
   }
 }, 5000)
+
+const handleErrorMessages = (e, genericMessage, cb) => {
+  console.error(genericMessage, e)
+
+  let errorMsg = genericMessage
+  if (e && e.message) {
+    errorMsg = e.message
+  } else {
+    const errorObj = JSON.parse(e)
+    if (errorObj && errorObj.error && errorObj.error.details &&
+      errorObj.error.details.length) {
+      errorMsg = errorObj.error.details[0].message
+    }
+  }
+
+  cb(errorMsg)
+}
 
 const getAuthorization = () => {
   if (!scatter || !scatter.identity || !scatter.identity.accounts)
@@ -124,7 +156,7 @@ app.ports.listMonsters.subscribe(async () => {
               app.ports.setMonstersFailed.send('Error while listing Monsters')
             })
 
-    app.ports.setMonsters.send(monsters)
+    if(monsters) app.ports.setMonsters.send(monsters)
 })
 
 app.ports.getGlobalConfig.subscribe(async () => {
@@ -175,7 +207,7 @@ app.ports.getWallet.subscribe(async () => {
         app.ports.setWalletFailed.send('Error while getting current Wallet')
       })
 
-    app.ports.setWallet.send(funds)
+    if(funds) app.ports.setWallet.send(funds)
 })
 
 app.ports.requestDeposit.subscribe(async (depositAmount) => {
@@ -222,14 +254,7 @@ app.ports.submitNewMonster.subscribe(async (monsterName) => {
   const contract = await getContract()
 
   const createpet = await contract.createpet(auth.account.name, monsterName, auth.permission)
-    .catch(e => {
-        console.error('error on pet creation ', e)
-        const errorObj = JSON.parse(e)
-        const errorMsg = (e && e.message) ||
-        (errorObj && errorObj.error && errorObj.error.details && errorObj.error.details.length && errorObj.error.details[0].message) ||
-        'An error happened while creating the monster'
-        app.ports.monsterCreationFailed.send(errorMsg)
-      })
+    .catch(e => handleErrorMessages(e, 'An error happened while creating the monster', app.ports.monsterCreationFailed.send))
 
   if (createpet) app.ports.monsterCreationSucceed.send(createpet.transaction_id)
 })
@@ -240,14 +265,7 @@ app.ports.requestFeed.subscribe(async (petId) => {
   const contract = await getContract()
 
   const feedpet = await contract.feedpet(petId, auth.permission)
-    .catch(e => {
-        console.error('error on feedpet ', e)
-        const errorMsg = (e && e.message) ||
-        'An error happened while feeding the monster'
-        app.ports.feedFailed.send(errorMsg)
-      })
-
-  console.log(feedpet)
+    .catch(e => handleErrorMessages(e, 'An error happened while feeding the monster', app.ports.feedFailed.send))
 
   if(feedpet) app.ports.feedSucceed.send(feedpet.transaction_id)
 })
@@ -259,14 +277,7 @@ app.ports.requestAwake.subscribe(async (petId) => {
   const contract = await getContract()
 
   const awakepet = await contract.awakepet(petId, auth.permission)
-    .catch(e => {
-        console.error('error on waking pet ', e)
-        const errorMsg = (e && e.message) ||
-        'An error happened while awaking the monster'
-        app.ports.awakeFailed.send(errorMsg)
-      })
-
-  console.log(awakepet)
+    .catch(e => handleErrorMessages(e, 'An error happened while awaking the monster', app.ports.awakeFailed.send))
 
   if(awakepet) app.ports.awakeSucceed.send(awakepet.transaction_id)
 })
@@ -277,14 +288,7 @@ app.ports.requestBed.subscribe(async (petId) => {
   const contract = await getContract()
 
   const bedpet = await contract.bedpet(petId, auth.permission)
-    .catch(e => {
-        console.error('error on bed pet ', e)
-        const errorMsg = (e && e.message) ||
-        'An error happened while attempting to bed the monster'
-        app.ports.bedFailed.send(errorMsg)
-      })
-
-  console.log(bedpet)
+    .catch(e => handleErrorMessages(e, 'An error happened while attempting to bed the monster', app.ports.bedFailed.send))
 
   if(bedpet) app.ports.bedSucceed.send(bedpet.transaction_id)
 })
@@ -295,12 +299,7 @@ app.ports.requestDelete.subscribe(async (petId) => {
   const contract = await getContract()
 
   const destroypet = await contract.destroypet(petId, auth.permission)
-    .catch(e => {
-        console.error('error on destroy pet ', e)
-        const errorMsg = (e && e.message) ||
-        'An error happened while attempting to destroy the monster'
-        app.ports.deleteFailed.send(errorMsg)
-      })
+    .catch(e => handleErrorMessages(e, 'An error happened while attempting to destroy the monster', app.ports.deleteFailed.send))
 
   console.log(destroypet)
 
@@ -407,5 +406,294 @@ const parseMonster = row => {
 
   return monster;
 }
+
+/**
+ * BATTLES INTERFACE
+ */
+app.ports.listBattles.subscribe(async () => {
+
+  const data = await localNet.getTableRows({
+              "json": true,
+              "scope": MONSTERS_ACCOUNT,
+              "code": MONSTERS_ACCOUNT,
+              "table": BATTLES_TABLE,
+              "limit": 5000
+          }).then(res => res.rows.map(r => {
+            r.startedAt = r.started_at * 1000;
+            r.lastMoveAt = r.last_move_at * 1000;
+            return r;
+          }))
+          .catch(e => handleErrorMessages(e, 'Error while listing Battles', app.ports.listBattlesFailed.send))
+
+  if(data) app.ports.listBattlesSucceed.send(data)
+})
+
+app.ports.getBattleWinner.subscribe(async (host) => {
+
+  const genericError = 'Battle is finished but failed to get the winner'
+
+  const data = await localNet.getActions({
+    "account_name": MONSTERS_ACCOUNT,
+    "offset": -300
+  }).catch(e => {
+    console.error(e)
+    app.ports.getBattleWinnerFailed.send(genericError)
+  })
+
+  if (data && data.actions) {
+    const actionData = data.actions
+      .reverse()
+      .filter(a => {
+        return a.action_trace && a.action_trace.act &&
+          a.action_trace.act.name == 'battlefinish' &&
+          a.action_trace.act.data.host == host
+      }).map(a => a.action_trace.act.data)
+
+    if (actionData.length) {
+      return app.ports.getBattleWinnerSucceed.send(actionData[0].winner)
+    }
+  }
+
+  app.ports.getBattleWinnerFailed.send(genericError)
+})
+
+app.ports.listElements.subscribe(async () => {
+
+  const data = await localNet.getTableRows({
+              "json": true,
+              "scope": MONSTERS_ACCOUNT,
+              "code": MONSTERS_ACCOUNT,
+              "table": ELEMENTS_TABLE,
+              "limit": 5000
+          }).then(res => res.rows.map(r => {
+
+            switch(r.id) {
+              case 0:
+                r.name = "Neutral";
+                break;
+              case 1:
+                r.name = "Wood";
+                break;
+              case 2:
+                r.name = "Earth";
+                break;
+              case 3:
+                r.name = "Water";
+                break;
+              case 4:
+                r.name = "Fire";
+                break;
+              case 5:
+                r.name = "Metal";
+                break;
+              case 6:
+                r.name = "Animal";
+                break;
+              case 7:
+                r.name = "Poison";
+                break;
+              case 8:
+                r.name = "Undead";
+                break;
+              case 9:
+                r.name = "Light";
+                break;
+            }
+
+            return r;
+          }))
+          .catch(e => handleErrorMessages(e, 'Error while listing Elements', app.ports.listElementsFailed.send))
+
+  if(data) app.ports.listElementsSucceed.send(data)
+})
+
+app.ports.listPetTypes.subscribe(async () => {
+
+  const data = await localNet.getTableRows({
+              "json": true,
+              "scope": MONSTERS_ACCOUNT,
+              "code": MONSTERS_ACCOUNT,
+              "table": PET_TYPES_TABLE,
+              "limit": 5000
+          }).then(res => res.rows)
+          .catch(e => handleErrorMessages(e, 'Error while listing Monster Types', app.ports.listPetTypesFailed.send))
+
+  if(data) app.ports.listPetTypesSucceed.send(data)
+})
+
+app.ports.battleCreate.subscribe(async (mode) => {
+  const auth = getAuthorization()
+
+  const accResources = await getEos().getAccount(auth.account.name)
+  console.log('acc resources', accResources)
+
+  const availableCpu = accResources.cpu_limit.available
+  const availableNet = accResources.net_limit.available
+
+  if (availableCpu < BATTLE_REQ_CPU) {
+    return app.ports.battleJoinFailed.send(`You don\'t have enough CPU to join in a Battle. You have ${availableCpu/1000}ms and a battle requires at least ${BATTLE_REQ_CPU}.`)
+  } else if (availableNet < BATTLE_REQ_NET) {
+    return app.ports.battleJoinFailed.send(`You don\'t have enough Net to join in a Battle. You have ${availableNet/1000}kb and a battle requires at least ${BATTLE_REQ_NET}.`)
+  }
+
+  const contract = await getContract()
+
+  const hashInfo = generateHashInfo()
+
+  const action = await contract.battlecreate(auth.account.name, mode, hashInfo.secret, auth.permission)
+  .catch(e => handleErrorMessages(e, 'An error happened while attempting to Create a Battle', app.ports.battleCreateFailed.send))
+
+  if(action) {
+    app.ports.battleCreateSucceed.send(action.transaction_id)
+  } else {
+    destroyHashInfo()
+  }
+})
+
+app.ports.battleJoin.subscribe(async (host) => {
+  const auth = getAuthorization()
+
+  const accResources = await getEos().getAccount(auth.account.name)
+  console.log('acc resources', accResources)
+
+  const availableCpu = accResources.cpu_limit.available
+  const availableNet = accResources.net_limit.available
+
+  if (availableCpu < BATTLE_REQ_CPU) {
+    return app.ports.battleJoinFailed.send(`You don\'t have enough CPU to join in a Battle. You have ${availableCpu/1000}ms and a battle requires at least ${BATTLE_REQ_CPU}.`)
+  } else if (availableNet < BATTLE_REQ_NET) {
+    return app.ports.battleJoinFailed.send(`You don\'t have enough Net to join in a Battle. You have ${availableNet/1000}kb and a battle requires at least ${BATTLE_REQ_NET}.`)
+  }
+
+  const contract = await getContract()
+
+  const hashInfo = generateHashInfo()
+
+  const action = await contract.battlejoin(host, auth.account.name, hashInfo.secret, auth.permission)
+  .catch(e => handleErrorMessages(e, 'An error happened while attempting to Join a Battle', app.ports.battleJoinFailed.send))
+
+  if(action) {
+    app.ports.battleJoinSucceed.send(action.transaction_id)
+  } else {
+    destroyHashInfo()
+  }
+})
+
+app.ports.battleLeave.subscribe(async (host) => {
+  const auth = getAuthorization()
+
+  const contract = await getContract()
+
+  const action = await contract.battleleave(host, auth.account.name, auth.permission)
+  .catch(e => handleErrorMessages(e, 'An error happened while attempting to Leave a Battle', app.ports.battleLeaveFailed.send))
+
+  if(action) {
+    destroyHashInfo()
+    app.ports.battleLeaveSucceed.send(action.transaction_id)
+  }
+})
+
+app.ports.battleStart.subscribe(async (host) => {
+  const auth = getAuthorization()
+
+  const contract = await getContract()
+
+  const hashInfo = flags.hashInfo
+
+  const action = await contract.battlestart(host, auth.account.name, hashInfo.hash, auth.permission)
+  .catch(e => handleErrorMessages(e, 'An error happened while attempting to Start a Battle', app.ports.battleStartFailed.send))
+
+  if(action) {
+    destroyHashInfo()
+    app.ports.battleStartSucceed.send(action.transaction_id)
+  }
+})
+
+app.ports.battleSelPet.subscribe(async params => {
+  const auth = getAuthorization()
+
+  const contract = await getContract()
+
+  const action = await contract.battleselpet(params.host, auth.account.name, params.petId, auth.permission)
+  .catch(e => handleErrorMessages(e, 'An error happened while attempting to Select a Monster for a Battle', app.ports.battleSelPetFailed.send))
+
+  if(action) app.ports.battleSelPetSucceed.send(action.transaction_id)
+})
+
+app.ports.battleAttack.subscribe(async params => {
+  const auth = getAuthorization()
+
+  const contract = await getContract()
+
+  const action = await contract.battleattack(params.host, auth.account.name, params.petId, params.petEnemyId, params.element, auth.permission)
+  .catch(e => handleErrorMessages(e, 'An error happened while attempting to Attack', app.ports.battleAttackFailed.send))
+
+  if(action) app.ports.battleAttackSucceed.send(action.transaction_id)
+})
+
+app.ports.showChat.subscribe(chatId => {
+  setTimeout(() => {
+    // console.log('opening battle chat: ' + chatId)
+
+    // does not work :P
+    // let embedId = document.getElementsByClassName("tlk-webchat");
+    // if (embedId && embedId[0]) {
+    //   embedId[0].innerHTML = `<div id="tlkio" data-channel="monstereos-${chatId}" style="width:100%;height:400px;"></div><script async src="http://tlk.io/embed.js" type="text/javascript"></script>`;
+    // }
+  }, 900)
+
+});
+
+// generate secret and hash random pair
+const generateHashInfo = () => {
+  if (!flags.hashInfo) {
+    // generate secret
+    const hash = ecc.sha256("meos" + Date.now() + hashInfo.mouseMove.join())
+    const hashBinary = Buffer.from(hash, 'hex');
+    const secret = ecc.sha256(hashBinary)
+
+    hashInfo.lastPair = { hash, secret }
+
+    flags.hashInfo = hashInfo.lastPair
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(flags))
+  }
+
+  return flags.hashInfo
+}
+
+// destroy last battle commitment random pair
+const destroyHashInfo = () => {
+  flags.hashInfo = null
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(flags))
+}
+
+// keep track of mouse to help hash generation
+const handleMouseMove = event => {
+  let dot, eventDoc, doc, body, pageX, pageY;
+
+  event = event || window.event; // IE-ism
+
+  // If pageX/Y aren't available and clientX/Y are,
+  // calculate pageX/Y - logic taken from jQuery.
+  // (This is to support old IE)
+  if (event.pageX == null && event.clientX != null) {
+      eventDoc = (event.target && event.target.ownerDocument) || document;
+      doc = eventDoc.documentElement;
+      body = eventDoc.body;
+
+      event.pageX = event.clientX +
+        (doc && doc.scrollLeft || body && body.scrollLeft || 0) -
+        (doc && doc.clientLeft || body && body.clientLeft || 0);
+      event.pageY = event.clientY +
+        (doc && doc.scrollTop  || body && body.scrollTop  || 0) -
+        (doc && doc.clientTop  || body && body.clientTop  || 0 );
+  }
+
+  // Use event.pageX / event.pageY here
+  hashInfo.mouseMove.unshift("x" + event.pageX + "y" + event.pageY)
+  hashInfo.mouseMove = hashInfo.mouseMove.slice(0,10);
+}
+document.onmousemove = handleMouseMove;
 
 registerServiceWorker();

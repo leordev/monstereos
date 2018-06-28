@@ -240,13 +240,182 @@
 .p-l-xxl {
   padding-left: 8rem; }
 
+@keyframes slideInFromBottom {
+  0% {
+    transform: translateY(150%); }
+  100% {
+    transform: translateY(0); } }
+
+.button.is-purple {
+  background-color: #b86bff;
+  color: white; }
+
+.button.is-brown {
+  background-color: #D2691E;
+  color: white; }
+
+.grayscale {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: grayscale(100%);
+  transition: all 200ms ease-in-out;
+  opacity: 0.3; }
+  .grayscale:hover {
+    -webkit-filter: grayscale(30%);
+    -moz-filter: grayscale(30%);
+    filter: grayscale(30%); }
+
+.sleeping {
+  -webkit-filter: brightness(5%);
+  -moz-filter: brightness(5%);
+  -ms-filter: brightness(5%);
+  -o-filter: brightness(5%);
+  filter: brightness(5%); }
+
 .logo {
-  font-family: 'Freckle Face', cursive;
+  font-family: "Freckle Face", cursive;
   font-size: 40px;
   margin: 24px; }
 
 .navbar-item.is-active {
   color: #3273dc !important; }
+
+.monster-picks small {
+  margin-left: 15px;
+  font-size: 14px;
+  font-weight: 400; }
+
+.monster-picks .player-monsters {
+  display: flex;
+  flex-wrap: wrap; }
+  .monster-picks .player-monsters .monster-pick {
+    max-width: 140px;
+    max-height: 140px;
+    margin: 18px;
+    -webkit-filter: brightness(80%);
+    -moz-filter: brightness(80%);
+    -ms-filter: brightness(80%);
+    -o-filter: brightness(80%);
+    filter: brightness(80%); }
+    .monster-picks .player-monsters .monster-pick:hover, .monster-picks .player-monsters .monster-pick.active {
+      border: 2px solid #23d160;
+      border-radius: 5%;
+      cursor: pointer;
+      -webkit-filter: brightness(100%);
+      -moz-filter: brightness(100%);
+      -ms-filter: brightness(100%);
+      -o-filter: brightness(100%);
+      filter: brightness(100%); }
+
+.monster-hp-name {
+  position: absolute;
+  margin-top: -25px;
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff; }
+
+.battle-actions {
+  height: 30px; }
+
+.battle-arena {
+  width: 1020px;
+  height: 600px;
+  margin: auto;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: gray no-repeat center center fixed;
+  background-size: cover; }
+  .battle-arena .elements {
+    margin-left: 14px; }
+  .battle-arena.arena-0 {
+    background: url("../public/images/arenas/0.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-1 {
+    background: url("../public/images/arenas/1.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-2 {
+    background: url("../public/images/arenas/2.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-3 {
+    background: url("../public/images/arenas/3.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-4 {
+    background: url("../public/images/arenas/4.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-5 {
+    background: url("../public/images/arenas/5.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-6 {
+    background: url("../public/images/arenas/6.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-7 {
+    background: url("../public/images/arenas/7.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-8 {
+    background: url("../public/images/arenas/8.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-9 {
+    background: url("../public/images/arenas/9.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-10 {
+    background: url("../public/images/arenas/10.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-11 {
+    background: url("../public/images/arenas/11.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-12 {
+    background: url("../public/images/arenas/12.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-13 {
+    background: url("../public/images/arenas/13.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-14 {
+    background: url("../public/images/arenas/14.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-15 {
+    background: url("../public/images/arenas/15.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-16 {
+    background: url("../public/images/arenas/16.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena.arena-17 {
+    background: url("../public/images/arenas/17.png") no-repeat center center;
+    background-size: cover; }
+  .battle-arena .arena-monster {
+    margin-top: 200px;
+    max-width: 200px;
+    max-height: 200px; }
+    .battle-arena .arena-monster figure {
+      max-height: 180px;
+      max-width: 180px; }
+    .battle-arena .arena-monster progress {
+      margin-bottom: 6px !important; }
+    .battle-arena .arena-monster .monster-hp-notification {
+      color: #ff3860;
+      font-weight: bold;
+      font-family: "Freckle Face", cursive;
+      font-size: 30px;
+      margin-left: 40px;
+      margin-top: -180px;
+      position: absolute;
+      text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black;
+      animation: 2s ease-out 0s 1 slideInFromBottom; }
+  .battle-arena .battle-winner-banner {
+    position: absolute;
+    z-index: 999;
+    font-weight: bold;
+    font-family: "Freckle Face", cursive;
+    font-size: 92px;
+    margin: auto;
+    margin-top: -100px;
+    text-shadow: -2px 0 black, 0 2px black, 2px 0 black, 0 -2px black; }
+  .battle-arena .enemy-monster {
+    cursor: pointer; }
+    .battle-arena .enemy-monster:hover, .battle-arena .enemy-monster.active {
+      border: 2px solid #ff3860;
+      border-radius: 5%; }
 
 form {
   margin-bottom: 20px; }
@@ -268,24 +437,6 @@ form {
   .coin-column {
     min-width: 500px;
     max-width: 550px; } }
-
-.grayscale {
-  -webkit-filter: grayscale(100%);
-  -moz-filter: grayscale(100%);
-  filter: grayscale(100%);
-  transition: all 200ms ease-in-out;
-  opacity: 0.3; }
-  .grayscale:hover {
-    -webkit-filter: grayscale(30%);
-    -moz-filter: grayscale(30%);
-    filter: grayscale(30%); }
-
-.sleeping {
-  -webkit-filter: brightness(5%);
-  -moz-filter: brightness(5%);
-  -ms-filter: brightness(5%);
-  -o-filter: brightness(5%);
-  filter: brightness(5%); }
 
 .monster-image {
   max-height: 300px !important; }
