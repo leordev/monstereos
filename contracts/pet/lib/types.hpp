@@ -177,4 +177,19 @@ namespace types {
   };
 
   typedef multi_index<N(battles), st_battle> _tb_battle;
+
+  struct st_orders {
+    uuid        id;
+    name        owner;
+    unint8_t    type; // 1: offer, 2: bid
+    uuid        pet_id;
+    uint64_t    amount;
+    uint32_t    placed_at;
+  }
+
+   uint64_t get_by_pet_id() const { return pet_id; }
+
+   typedef multi_index<N(order_book), st_orders,
+        indexed_by<N(bypet), const_mem_fun<st_orders, uint64_t, &st_orders::get_by_pet_id>>
+    > _tb_order_book;
 }
