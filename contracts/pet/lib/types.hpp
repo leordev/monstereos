@@ -55,7 +55,6 @@ namespace types {
   struct st_pets {
       uuid id;
       name owner;
-      name newowner;
       string name;
       uint8_t type;
       uint32_t created_at;

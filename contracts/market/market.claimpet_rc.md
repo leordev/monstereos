@@ -5,6 +5,7 @@
 ### Parameters
 Input parameters:
 
+* `oldowner` (identifier of previous owner)
 * `pet_id` (identifier of monster)
 
 ### Intent
