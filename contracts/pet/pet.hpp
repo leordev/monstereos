@@ -49,6 +49,8 @@ public:
     void bedpet       ( uuid pet_id );
     void awakepet     ( uuid pet_id );
     void destroypet   ( uuid pet_id );
+    void transferpet(uuid pet_id, name newowner);
+    void claimpet(uuid pet_id);
 
     // battle interface
     void battlecreate ( name host, battle_mode mode, checksum256 secret );
