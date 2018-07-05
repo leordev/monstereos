@@ -58,3 +58,5 @@ void market::claimpet(name oldowner, uuid pet_id) {
 
     offers.erase(offer);
 }
+
+EOSIO_ABI(market, (offerpet)(removeoffer)(claimpet))
