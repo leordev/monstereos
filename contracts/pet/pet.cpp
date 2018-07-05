@@ -93,34 +93,6 @@ void pet::destroypet(uuid pet_id) {
 
 }
 
-void pet::transferpet(uuid pet_id, name newowner) {
-    const auto& pet = pets.get(pet_id, "E404|Invalid pet");
-
-    require_auth(pet.owner);
-    eosio_assert(pet.owner != newowner, "new owner must be different than current owner");
-
-    pets.modify(pet, pet.owner, [&](auto &r) {
-        r.new_owner = newowner;
-    });
-
-    print("new owner can become ", newowner);
-}
-
-void pet::claimpet(uuid pet_id) {
-    const auto& pet= pets.get(pet_id, "E404|Invalid pet");
-
-    const name newowner = pet.new_owner;
-    eosio_assert(newowner != (const name) {0}, "E404|Pet not ready for transfer");
-    require_auth(newowner);
-
-    pets.modify(pet, pet.new_owner, [&](auto &r) {
-        r.owner = newowner;
-        r.new_owner = (const name) {0};
-    });
-
-    print("new owner set to ", newowner);
-}
-
 void pet::feedpet(uuid pet_id) {
 
     auto itr_pet = pets.find(pet_id);
@@ -294,7 +266,7 @@ void pet::_update(st_pets &pet) {
 // and EOSIO_ABI_EX to generate the listener action
 // https://eosio.stackexchange.com/q/421/54
 
-// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(transferpet)(claimpet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer))
+// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer))
 
 #define EOSIO_ABI_EX( TYPE, MEMBERS ) \
 extern "C" { \
@@ -322,8 +294,6 @@ EOSIO_ABI_EX(pet,
     (bedpet)
     (awakepet)
     (destroypet)
-    (transferpet)
-    (claimpet)
 
     // battles
     (battlecreate)
