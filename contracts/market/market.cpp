@@ -17,13 +17,13 @@ void market::offerpet(uuid pet_id, name newowner) {
             r.new_owner = newowner;
         });
     } else {
-        uuid new_id = user_pet_id;
         offers.emplace(pet.owner, [&](auto& r){            
             st_offers offer{};
-            offer.id = new_id;
+            offer.id = offers.available_primary_key();
             offer.user = pet.owner;
             offer.new_owner = newowner;
             offer.type = 1;
+            offer.amount = 0;
             offer.placed_at = now();
             r = offer;
         });

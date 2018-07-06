@@ -17,6 +17,8 @@ const ELEMENTS_TABLE = 'elements'
 const PET_TYPES_TABLE = 'pettypes'
 const CONFIG_TABLE = 'petconfig2'
 const BALANCES_TABLE = 'accounts'
+const MARKET_ACCOUNT = 'monstereosmk'
+const MARKET_TABLE = 'offers'
 const TOKEN_SYMBOL = 'EOS'
 const MEMO = 'MonsterEOS Wallet Deposit'
 
@@ -92,6 +94,10 @@ const getEos = () => {
 
 const getContract = async () => {
   return getEos().contract(MONSTERS_ACCOUNT);
+}
+
+const getMarketContract = async () => {
+  return getEos().contract(MARKET_ACCOUNT);
 }
 
 document.addEventListener('scatterLoaded', scatterExtension => {
@@ -317,9 +323,9 @@ app.ports.requestWash.subscribe(async (petId) => {
 app.ports.submitNewOwner.subscribe(async (petId, newOwner) => {
   const auth = getAuthorization()
 
-  const contract = await getContract()
+  const marketContract = await getMarketContract()
 
-  const transferpet = await contract.transferpet(petId, newOwner)
+  const transferpet = await marketContract.offerpet(petId, newOwner)
     .catch(e => {
         console.error('error on transferring pet ', e)
         const errorMsg = (e && e.message) ||
@@ -333,12 +339,12 @@ app.ports.submitNewOwner.subscribe(async (petId, newOwner) => {
 })
 
 
-app.ports.requestClaim.subscribe(async (petId) => {
+app.ports.requestClaim.subscribe(async (oldowner, petId) => {
   const auth = getAuthorization()
 
-  const contract = await getContract()
+  const marketContract = await getMarketContract()
 
-  const claimpet = await contract.claimpet(petId)
+  const claimpet = await marketContract.claimpet(oldowner, petId)
     .catch(e => {
         console.error('error on claiming pet ', e)
         const errorMsg = (e && e.message) ||

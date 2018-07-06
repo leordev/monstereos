@@ -55,7 +55,7 @@ initialModel =
     , monsters = []
     , newMonsterName = ""
     , petIdForTransfer = 0
-    , newOwnerAccount = ""
+    , otherOwnerAccount = ""
     , notifications = []
     , wallet = Wallet 0
     , depositAmount = 3
@@ -284,7 +284,7 @@ type alias Model =
     , monsters : List Monster
     , newMonsterName : String
     , petIdForTransfer: Int
-    , newOwnerAccount : String
+    , otherOwnerAccount : String
     , notifications : List Notification
     , wallet : Wallet
     , showWallet : Bool
@@ -455,7 +455,7 @@ port transferSucceed : (String -> msg) -> Sub msg
 
 port transferFailed : (String -> msg) -> Sub msg
 
-port requestClaim : Int -> Cmd msg
+port requestClaim : (String, Int) -> Cmd msg
 
 port claimSucceed : (String -> msg) -> Sub msg
 
@@ -668,11 +668,11 @@ type Msg
     | RequestMonsterTransfer Int
     | UpdateNewOwnerAccount String
     | SubmitTransferMonster
+    | RequestMonsterClaim String Int
     | MonsterTransferSucceed String
     | MonsterTransferFailed String
     | MonsterClaimSucceed String
     | MonsterClaimFailed String
-    | RequestMonsterClaim Int
     | UpdateNewMonsterName String
     | SubmitNewMonster
     | UpdateDepositAmount String
@@ -851,8 +851,8 @@ update msg model =
         MonsterTransferFailed err ->
             handleMonsterAction model err "Transfer" True
 
-        RequestMonsterClaim petId ->
-           ( { model | isLoading = True }, requestClaim (petId) )
+        RequestMonsterClaim oldOwner petId ->
+           ( { model | isLoading = True }, requestClaim (oldOwner, petId) )
 
         MonsterClaimSucceed trxId ->
             handleMonsterAction model trxId "Claim" True
@@ -999,10 +999,10 @@ update msg model =
             ( { model | isLoading = True }, submitNewMonster (model.newMonsterName) )
 
         UpdateNewOwnerAccount newOwner ->
-            ( { model | newOwnerAccount = newOwner}, Cmd.none)
+            ( { model | otherOwnerAccount = newOwner}, Cmd.none)
 
         SubmitTransferMonster ->
-        ({model | isLoading = True}, submitNewOwner(model.petIdForTransfer, model.newOwnerAccount) )
+            ( {model | isLoading = True}, submitNewOwner(model.petIdForTransfer, model.otherOwnerAccount) )
 
         UpdateDepositAmount txtAmount ->
             ( { model
@@ -1045,7 +1045,7 @@ update msg model =
 
         ToggleMonsterTransfer ->
             ( { model
-                | newOwnerAccount = ""
+                | otherOwnerAccount = ""
                 , showMonsterTransfer = (not model.showMonsterTransfer)
               }
             , Cmd.none
@@ -2059,7 +2059,7 @@ monsterTransferModal model =
                 [ fieldInput
                     model
                     "New owner"
-                    model.newOwnerAccount
+                    model.otherOwnerAccount
                     "monstereosio"
                     "user"
                     UpdateNewOwnerAccount
@@ -2410,7 +2410,7 @@ monsterCard monster currentTime isLoading readOnly canBeClaimed =
                     else if canBeClaimed then
                         [ a
                             [ class "card-footer-item"
-                            , onClick (RequestMonsterClaim monster.id)
+                            , onClick (RequestMonsterClaim monster.owner monster.id)
                             , disabledAttribute isLoading
                             ]
                             [ text "Claim" ]
@@ -3316,6 +3316,8 @@ view model =
                 walletModal model
             else if model.showMonsterCreation then
                 monsterCreationModal model
+            else if model.showMonsterTransfer then
+                monsterTransferModal model model.startTransfer
             else
                 text ""
     in

@@ -15,7 +15,7 @@ public:
     market(account_name self)
     :eosio::contract(self),
     offers(_self, _self),
-    pets(_self, _self)
+    pets(N(monstereosio), N(monstereosio))
     {
     }
 
