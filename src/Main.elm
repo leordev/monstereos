@@ -3317,7 +3317,7 @@ view model =
             else if model.showMonsterCreation then
                 monsterCreationModal model
             else if model.showMonsterTransfer then
-                monsterTransferModal model model.startTransfer
+                monsterTransferModal model
             else
                 text ""
     in
