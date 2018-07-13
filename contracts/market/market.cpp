@@ -13,7 +13,7 @@ void market::offerpet(uuid pet_id, name newowner) {
     if (itr_user_pet != idx_existent_offer.end()) {
         auto offer = *itr_user_pet;
         // eosio_assert(offer.type == 1, "you can't ask and bid at the same time. (should not happen anyway)");
-        offers.modify(offer, pet.owner, [&](auto &r) {
+        offers.modify(*itr_user_pet, pet.owner, [&](auto &r) {
             r.new_owner = newowner;
         });
     } else {
@@ -22,6 +22,7 @@ void market::offerpet(uuid pet_id, name newowner) {
             offer.id = offers.available_primary_key();
             offer.user = pet.owner;
             offer.new_owner = newowner;
+            offer.pet_id = pet.id;
             offer.type = 1;
             offer.amount = 0;
             offer.placed_at = now();
@@ -42,7 +43,7 @@ void market::removeoffer(name owner, uuid pet_id) {
 }
 
 void market::claimpet(name oldowner, uuid pet_id) {
-    auto idx_existent_offer = offers.template get_index<N(by_user_and_pet)>();
+    auto idx_existent_offer = offers.get_index<N(by_user_and_pet)>();
     const auto& offer = idx_existent_offer.get(combine_ids(oldowner, pet_id), "E404|Invalid offer");
     const auto& pet = pets.get(pet_id, "E404|Invalid pet");
 
@@ -52,9 +53,8 @@ void market::claimpet(name oldowner, uuid pet_id) {
 
     eosio_assert(oldowner == pet.owner, "E404|Pet already transferred");
 
-    pets.modify(pet, newowner, [&](auto &r) {
-        r.owner = newowner;
-    });
+    action(permission_level{_self, N(active)}, N(monstereosio), N(transferpet),
+    std::make_tuple(pet.id, newowner)).send();
 
     offers.erase(offer);
 }

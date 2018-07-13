@@ -27,7 +27,7 @@ namespace types {
         uint64_t primary_key() const { return id; }
         uint128_t get_by_user_and_pet() const { return combine_ids(user, pet_id); }
 
-        EOSLIB_SERIALIZE(st_offers, (id)(user)(type)(pet_id)(amount)(placed_at))
+        EOSLIB_SERIALIZE(st_offers, (id)(user)(type)(pet_id)(new_owner)(amount)(placed_at))
     };
 
    typedef multi_index<N(offers), st_offers,

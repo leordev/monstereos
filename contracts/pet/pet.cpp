@@ -93,6 +93,19 @@ void pet::destroypet(uuid pet_id) {
 
 }
 
+void pet::transferpet(uuid pet_id, name newowner) {
+    print(pet_id, "| updating pet ");
+    auto itr_pet = pets.find(pet_id);
+    eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
+    auto pet = *itr_pet;
+
+    pets.modify(itr_pet, 0, [&](auto &r) {
+        r.owner = newowner;
+    });
+
+    print("new owner ", newowner);    
+}
+
 void pet::feedpet(uuid pet_id) {
 
     auto itr_pet = pets.find(pet_id);
@@ -266,6 +279,7 @@ void pet::_update(st_pets &pet) {
 // and EOSIO_ABI_EX to generate the listener action
 // https://eosio.stackexchange.com/q/421/54
 
+// DO NOT include transferpet into the abi, as it is only for internal use.
 // EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer))
 
 #define EOSIO_ABI_EX( TYPE, MEMBERS ) \
@@ -294,6 +308,7 @@ EOSIO_ABI_EX(pet,
     (bedpet)
     (awakepet)
     (destroypet)
+    (transferpet)
 
     // battles
     (battlecreate)
