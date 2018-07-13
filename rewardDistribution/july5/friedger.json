@@ -1,0 +1,16 @@
+{
+    "teamMemberId": 3,
+    "eosAccount": "friedgermuef",
+    "timeEntries": [
+        {
+            "timeSpent": 2,
+            "weight": 0.8,
+            "notes": "Write ricardian contracts"
+        },
+        {
+            "timeSpent": 1.5,
+            "weight": 0.8,
+            "notes": "Implement monster transfer"
+        }
+    ]
+}

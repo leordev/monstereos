@@ -1,6 +1,6 @@
 {
     "teamMemberId": 1,
-    "eosAccount": "",
+    "eosAccount": "gm3daojtg4ge",
     "timeEntries": [
         {
             "timeSpent": 0.5,
@@ -26,6 +26,11 @@
             "timeSpent": 1,
             "weight": 1,
             "notes": "Meeting with LSM, engaged Leo and updated, created GH issue"
+        },
+        {
+            "timeSpent": 1,
+            "weight": 1,
+            "notes": "Interview with Jenny"
         }
     ]
 }

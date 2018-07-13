@@ -1,0 +1,51 @@
+{
+    "teamMemberId": 2,
+    "eosAccount": "leordeveosio",
+    "timeEntries": [
+        {
+            "timeSpent": 2,
+            "weight": 1,
+            "notes": "battle system spreadsheet"
+        },
+        {
+            "timeSpent": 2,
+            "weight": 1,
+            "notes": "monster destroy"
+        },
+        {
+            "timeSpent": 12,
+            "weight": 1,
+            "notes": "battle branch kickoff"
+        },
+        {
+            "timeSpent": 10,
+            "weight": 1,
+            "notes": "battle wip"
+        },
+        {
+            "timeSpent": 4,
+            "weight": 1,
+            "notes": "battle victory"
+        },
+        {
+            "timeSpent": 16,
+            "weight": 1,
+            "notes": "battle ram improvements and bootstrapui"
+        },
+        {
+            "timeSpent": 16,
+            "weight": 1,
+            "notes": "battle ui"
+        },
+        {
+            "timeSpent": 10,
+            "weight": 1,
+            "notes": "battle winning loop and prelease"
+        },
+        {
+            "timeSpent": 6,
+            "weight": 1,
+            "notes": "release"
+        }
+    ]
+}
