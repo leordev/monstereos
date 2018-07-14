@@ -25,7 +25,6 @@ public:
     void offerpet(uuid pet_id, name newowner, uint32_t until, uint64_t amount);
     void removeoffer(name owner, uuid pet_id);
     void claimpet(name oldowner, uuid pet_id);
-
-    
-
+    void bidpet(uuid pet_id, name bidder, uint32_t until, uint64_t amount);
+    void removebid(name bidder, uuid pet_id);
 };

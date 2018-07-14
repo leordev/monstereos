@@ -17,7 +17,7 @@ namespace types {
     struct st_offers {
         uuid        id;
         name        user;
-        uint8_t     type; // 1: ask, 2: bid, 11: ask for temporary transfer
+        uint8_t     type; // 1: ask, 2: bid, 11: ask for renting, 12: bid for renting, 10: renting
         uuid        pet_id;
         name        new_owner;
         asset       value;
