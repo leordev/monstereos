@@ -94,6 +94,9 @@ void pet::destroypet(uuid pet_id) {
 }
 
 void pet::transferpet(uuid pet_id, name newowner) {
+    
+    require_auth(N(monstereosmt));
+
     print(pet_id, "| updating pet ");
     auto itr_pet = pets.find(pet_id);
     eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
