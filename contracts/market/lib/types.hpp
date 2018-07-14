@@ -17,17 +17,20 @@ namespace types {
     struct st_offers {
         uuid        id;
         name        user;
-        uint8_t     type; // 1: ask, 2: bid
+        uint8_t     type; // 1: ask, 2: bid, 11: ask for temporary transfer
         uuid        pet_id;
         name        new_owner;
-        uint64_t    amount;
+        asset       value;
         uint32_t    placed_at;
+        uint32_t    ends_at;
+        uint32_t    transfer_ends_at;
+
 
 
         uint64_t primary_key() const { return id; }
         uint128_t get_by_user_and_pet() const { return combine_ids(user, pet_id); }
 
-        EOSLIB_SERIALIZE(st_offers, (id)(user)(type)(pet_id)(new_owner)(amount)(placed_at))
+        EOSLIB_SERIALIZE(st_offers, (id)(user)(type)(pet_id)(new_owner)(value)(placed_at)(ends_at)(transfer_ends_at))
     };
 
    typedef multi_index<N(offers), st_offers,

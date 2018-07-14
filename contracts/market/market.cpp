@@ -1,6 +1,6 @@
 #include "market.hpp"
 
-void market::offerpet(uuid pet_id, name newowner) {
+void market::offerpet(uuid pet_id, name newowner, uint32_t until = 0, uint64_t amount = 0) {
     const auto& pet = pets.get(pet_id, "E404|Invalid pet");
 
     require_auth(pet.owner);
@@ -9,7 +9,13 @@ void market::offerpet(uuid pet_id, name newowner) {
     auto idx_existent_offer = offers.get_index<N(by_user_and_pet)>();
     auto user_pet_id = combine_ids(pet.owner, pet_id);
     auto itr_user_pet = idx_existent_offer.find(user_pet_id);
-
+    uint32_t placed_at = now();
+    uint8_t type;
+    if (until > 0) {
+        type = 11; // temporary transfer
+    } else {
+        type = 1; // indefinite transfer
+    }
     if (itr_user_pet != idx_existent_offer.end()) {
         auto offer = *itr_user_pet;
         // eosio_assert(offer.type == 1, "you can't ask and bid at the same time. (should not happen anyway)");
@@ -18,14 +24,16 @@ void market::offerpet(uuid pet_id, name newowner) {
         });
     } else {
         offers.emplace(pet.owner, [&](auto& r){            
-            st_offers offer{};
-            offer.id = offers.available_primary_key();
-            offer.user = pet.owner;
-            offer.new_owner = newowner;
-            offer.pet_id = pet.id;
-            offer.type = 1;
-            offer.amount = 0;
-            offer.placed_at = now();
+            st_offers offer {
+                .id = offers.available_primary_key(),
+                .user = pet.owner,
+                .new_owner = newowner,
+                .pet_id = pet.id,
+                .type = type,
+                .value = asset(amount),
+                .placed_at = placed_at,
+                .ends_at = 0,
+                .transfer_ends_at = until};
             r = offer;
         });
     }
@@ -53,8 +61,7 @@ void market::claimpet(name oldowner, uuid pet_id) {
 
     eosio_assert(oldowner == pet.owner, "E404|Pet already transferred");
 
-    action(permission_level{_self, N(active)}, N(monstereosio), N(transferpet),
-    std::make_tuple(pet.id, newowner)).send();
+    action(permission_level{_self, N(active)}, N(monstereosio), N(transferpet), std::make_tuple(pet.id, newowner)).send();
 
     offers.erase(offer);
 }

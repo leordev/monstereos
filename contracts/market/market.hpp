@@ -22,7 +22,7 @@ public:
     _tb_offers offers;
     types::_tb_pet pets;
 
-    void offerpet(uuid pet_id, name newowner);
+    void offerpet(uuid pet_id, name newowner, uint32_t until, uint64_t amount);
     void removeoffer(name owner, uuid pet_id);
     void claimpet(name oldowner, uuid pet_id);
 
