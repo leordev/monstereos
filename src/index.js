@@ -17,7 +17,7 @@ const ELEMENTS_TABLE = 'elements'
 const PET_TYPES_TABLE = 'pettypes'
 const CONFIG_TABLE = 'petconfig2'
 const BALANCES_TABLE = 'accounts'
-const MARKET_ACCOUNT = 'monstereosmk'
+const MARKET_ACCOUNT = 'monstereosmt'
 const MARKET_TABLE = 'offers'
 const TOKEN_SYMBOL = 'EOS'
 const MEMO = 'MonsterEOS Wallet Deposit'
@@ -327,12 +327,12 @@ app.ports.requestWash.subscribe(async (petId) => {
   app.ports.feedSucceed.send('lazy developer must build "Wash" action')
 })
 
-app.ports.submitNewOwner.subscribe(async (petId, newOwner) => {
+app.ports.submitNewOwner.subscribe(async (petId, newOwner, durationOfTransfer) => {
   const auth = getAuthorization()
 
   const marketContract = await getMarketContract()
-
-  const transferpet = await marketContract.offerpet(petId, newOwner)
+  const until = Math.floor(now()/1000) + parseInt(durationOfTransfer) // in seconds
+  const transferpet = await marketContract.offerpet(petId, newOwner, until)
     .catch(e => {
         console.error('error on transferring pet ', e)
         const errorMsg = (e && e.message) ||

@@ -56,6 +56,7 @@ initialModel =
     , newMonsterName = ""
     , petIdForTransfer = 0
     , otherOwnerAccount = ""
+    , durationOfTransfer = "0"
     , notifications = []
     , wallet = Wallet 0
     , depositAmount = 3
@@ -285,6 +286,7 @@ type alias Model =
     , newMonsterName : String
     , petIdForTransfer: Int
     , otherOwnerAccount : String
+    , durationOfTransfer: String
     , notifications : List Notification
     , wallet : Wallet
     , showWallet : Bool
@@ -449,7 +451,7 @@ port awakeSucceed : (String -> msg) -> Sub msg
 
 port awakeFailed : (String -> msg) -> Sub msg
 
-port submitNewOwner : (Int, String) -> Cmd msg
+port submitNewOwner : (Int, String, String) -> Cmd msg
 
 port transferSucceed : (String -> msg) -> Sub msg
 
@@ -667,6 +669,7 @@ type Msg
     | RequestMonsterWash Int
     | RequestMonsterTransfer Int
     | UpdateNewOwnerAccount String
+    | UpdateDurationOfTransfer String
     | SubmitTransferMonster
     | RequestMonsterClaim String Int
     | MonsterTransferSucceed String
@@ -1022,8 +1025,11 @@ update msg model =
         UpdateNewOwnerAccount newOwner ->
             ( { model | otherOwnerAccount = newOwner}, Cmd.none)
 
+        UpdateDurationOfTransfer duration -> 
+            ( { model | durationOfTransfer = duration}, Cmd.none)
+
         SubmitTransferMonster ->
-            ( {model | isLoading = True}, submitNewOwner(model.petIdForTransfer, model.otherOwnerAccount) )
+            ( {model | isLoading = True}, submitNewOwner(model.petIdForTransfer, model.otherOwnerAccount, model.durationOfTransfer) )
 
         UpdateDepositAmount txtAmount ->
             ( { model
@@ -1067,6 +1073,7 @@ update msg model =
         ToggleMonsterTransfer ->
             ( { model
                 | otherOwnerAccount = ""
+                , durationOfTransfer = "0"
                 , showMonsterTransfer = (not model.showMonsterTransfer)
               }
             , Cmd.none
@@ -2089,7 +2096,7 @@ monsterTransferModal : Model -> Html Msg
 monsterTransferModal model =
     let
         modalClass =
-            if model.showHelp then
+            if model.showMonsterTransfer then
                 "modal is-active"
             else
                 "modal"
@@ -2101,13 +2108,24 @@ monsterTransferModal model =
             "Transfer Monster "
             ToggleMonsterTransfer
             [ form []
-                [ fieldInput
-                    model
-                    "New owner"
-                    model.otherOwnerAccount
-                    "monstereosio"
-                    "user"
-                    UpdateNewOwnerAccount
+                [ div [ class "has-margin-top" ]
+                    [ fieldInput
+                        model
+                        "New owner"
+                        model.otherOwnerAccount
+                        "monstereosio"
+                        "user"
+                        UpdateNewOwnerAccount
+                    ]
+                , div [ class "has-margin-top" ]
+                    [ fieldInput
+                        model
+                        "Duration in seconds"
+                        model.durationOfTransfer
+                        "0"
+                        "stopwatch"
+                        UpdateDurationOfTransfer
+                    ]
                 ]
             ]
             (Just ( "Submit", SubmitTransferMonster ))
