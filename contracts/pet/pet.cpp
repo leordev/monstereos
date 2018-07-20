@@ -235,6 +235,31 @@ void pet::transfer(uint64_t sender, uint64_t receiver) {
 
     print("\n", name{transfer_data.from}, " deposited:       ", transfer_data.quantity);
     print("\n", name{transfer_data.from}, " funds available: ", new_balance);
+
+    auto substr = "MTT";
+    auto startsWithMTT = strncmp(transfer_data.memo.c_str(), substr.c_str(), substr.size());
+    
+    if (startsWithMTT == 0) {
+        auto offerid = stoi(transfer_data.memo.substr(4));
+        _tb_offers offers(_self, _self);
+        auto offer = offers.get(offerid);
+
+        if (offer != offers.end()) {
+            auto itr_pet = pets.find(offer.pet_id);
+        
+            eosio_assert(offer.type == 10, "E404|Offer of type " + offer.type);
+            eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
+            auto pet = *itr_pet;
+            // transfer money to previous owner
+            _transfervalue(_self, pet.owner, transfer_data.quantity);
+
+            // change ownership
+            pets.modify(itr_pet, 0, [&](auto &r) {
+                r.owner = newowner;
+            });
+        }
+        
+    }
 }
 
 uint32_t pet::_calc_hunger_hp(const uint8_t &max_hunger_points, const uint32_t &hunger_to_zero,
@@ -275,6 +300,10 @@ void pet::_update(st_pets &pet) {
     if (hp <= 0) {
         pet.death_at = current_time;
     }
+}
+
+void pet::_transfervalue(name sender, name receiver, asset quantity, string memo) {
+     action(permission_level{_self, N(active)}, N(eosio.token), N(transfer), std::make_tuple(sender, receiver, quantity, memo)).send();
 }
 
 // we need to sacrifice abi generation for recipient listener
