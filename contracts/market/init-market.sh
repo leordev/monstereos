@@ -17,3 +17,33 @@ cleos set account permission monstereosmt active \
                    "permission": "eosio.code"},
                    "weight": 1
   }]}' owner -p monstereosmt
+
+# some testing
+
+echo "make offer and remove it"
+cleos push action monstereosmt offerpet '[1, "friedger"]' -p leordev
+cleos get table monstereosmt monstereosmt offers -l 1
+
+cleos push action monstereosmt removeoffer '["leordev", 1]' -p leordev
+cleos get table monstereosmt monstereosmt offers -l 1
+
+sleep .5
+
+# offer pet and claim pet
+echo "make offer and claim it and reverse it"
+echo "monster 1 offered by leordev claimed by friedger"
+cleos get table monstereosio monstereosio pets -l 1
+cleos push action monstereosmt offerpet '[1, "friedger"]' -p leordev
+cleos push action monstereosmt claimpet '["leordev", 1]' -p friedger
+
+echo "monster 1 belongs to friedger"
+cleos get table monstereosio monstereosio pets -l 1
+
+echo "monster 1 offered by friedger, claimed by leordev"
+cleos push action monstereosmt offerpet '[1, "leordev"]' -p friedger
+cleos push action monstereosmt claimpet '["friedger", 1]' -p leordev
+
+echo "no offers left"
+cleos get table monstereosmt monstereosmt offers -l 1
+echo "monster 1 back to leordev"
+cleos get table monstereosio monstereosio pets -l 1
