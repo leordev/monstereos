@@ -47,3 +47,7 @@ echo "no offers left"
 cleos get table monstereosmt monstereosmt offers -l 1
 echo "monster 1 back to leordev"
 cleos get table monstereosio monstereosio pets -l 1
+
+sleep .5
+cleos push action monstereosmt offerpet '[1, "friedger", 0, 10000]' -p leordev
+cleos push action eosio.token transfer '["friedger", "monstereosio", "1.0000 EOS", "MTT0"]' -p friedger

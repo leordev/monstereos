@@ -141,5 +141,6 @@ public:
                              const uint8_t &hunger_hp_modifier,
                              const uint32_t &last_fed_at,
                              const uint32_t &current_time);
+    void _transfervalue(name receiver, asset quantity, string memo);
 
 };

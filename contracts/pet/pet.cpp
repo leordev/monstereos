@@ -2,6 +2,7 @@
 #include "lib/utils.hpp"
 #include "lib/pet.admin.cpp"
 #include "lib/pet.battle.cpp"
+#include "../market/lib/types.hpp"
 
 using namespace utils;
 using namespace types;
@@ -236,26 +237,30 @@ void pet::transfer(uint64_t sender, uint64_t receiver) {
     print("\n", name{transfer_data.from}, " deposited:       ", transfer_data.quantity);
     print("\n", name{transfer_data.from}, " funds available: ", new_balance);
 
-    auto substr = "MTT";
+    string substr = "MTT";
     auto startsWithMTT = strncmp(transfer_data.memo.c_str(), substr.c_str(), substr.size());
     
     if (startsWithMTT == 0) {
-        auto offerid = stoi(transfer_data.memo.substr(4));
+        string sofferid = transfer_data.memo.substr(4);
+        auto offerid = stoi(sofferid);
+        print("\ntransfer received for offer ", offerid);
         _tb_offers offers(_self, _self);
-        auto offer = offers.get(offerid);
+        auto itr_offer = offers.find(offerid);
 
-        if (offer != offers.end()) {
+        if (itr_offer != offers.end()) {
+            auto offer = *itr_offer;
             auto itr_pet = pets.find(offer.pet_id);
         
             eosio_assert(offer.type == 10, "E404|Offer of type " + offer.type);
             eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
             auto pet = *itr_pet;
             // transfer money to previous owner
-            _transfervalue(_self, pet.owner, transfer_data.quantity);
+            string memo = "transfer for offer " + sofferid;
+            _transfervalue(pet.owner, transfer_data.quantity, memo);
 
             // change ownership
             pets.modify(itr_pet, 0, [&](auto &r) {
-                r.owner = newowner;
+                r.owner = offer.new_owner;
             });
         }
         
@@ -302,8 +307,8 @@ void pet::_update(st_pets &pet) {
     }
 }
 
-void pet::_transfervalue(name sender, name receiver, asset quantity, string memo) {
-     action(permission_level{_self, N(active)}, N(eosio.token), N(transfer), std::make_tuple(sender, receiver, quantity, memo)).send();
+void pet::_transfervalue(name receiver, asset quantity, string memo) {
+     action(permission_level{_self, N(active)}, N(eosio.token), N(transfer), std::make_tuple(N(monstereosio), receiver, quantity, memo)).send();
 }
 
 // we need to sacrifice abi generation for recipient listener
