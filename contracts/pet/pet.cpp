@@ -262,6 +262,12 @@ void pet::transfer(uint64_t sender, uint64_t receiver) {
             pets.modify(itr_pet, 0, [&](auto &r) {
                 r.owner = offer.new_owner;
             });
+
+            accounts.modify(itr_balance, transfer_data.from, [&](auto& r){
+                // Assumption: total currency issued by eosio.token will not overflow asset
+                r.balance -= transfer_data.quantity;
+                new_balance = r.balance;
+            });
         }
         
     }
