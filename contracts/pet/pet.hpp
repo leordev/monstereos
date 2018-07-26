@@ -73,7 +73,7 @@ public:
 
     // token deposits
     void transfer     ( uint64_t sender, uint64_t receiver );
-
+    void handletransf (string memo, asset quantity, account_name from);
     private:
 
     /* ****************************************** */
@@ -117,7 +117,7 @@ public:
         uint16_t battle_max_arenas = 10;
         uint16_t battle_busy_arenas = 0;
         uint16_t last_element_id = 0;
-        uint16_t last_pet_type_id = 0;
+        uint16_t last_pet_type_id = 109;
     };
 
     typedef singleton<N(petconfig2), st_pet_config2> pet_config2_singleton;

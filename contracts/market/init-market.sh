@@ -18,6 +18,18 @@ cleos set account permission monstereosmt active \
                    "weight": 1
   }]}' owner -p monstereosmt
 
+cleos set account permission monstereosio active \
+'{"threshold": 1,
+  "keys": [{
+    "key": "'${EOS_KEY}'",
+    "weight": 1
+  }],
+  "accounts": [{
+    "permission": {"actor": "monstereosio",
+                   "permission": "eosio.code"},
+                   "weight": 1
+  }]}' owner -p monstereosio
+
 # some testing
 
 echo "make offer and remove it"

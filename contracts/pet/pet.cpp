@@ -237,39 +237,51 @@ void pet::transfer(uint64_t sender, uint64_t receiver) {
     print("\n", name{transfer_data.from}, " deposited:       ", transfer_data.quantity);
     print("\n", name{transfer_data.from}, " funds available: ", new_balance);
 
+    handletransf(transfer_data.memo, transfer_data.quantity, transfer_data.from);   
+
+}
+
+void pet::handletransf(string memo, asset quantity, account_name from) {
     string substr = "MTT";
-    auto startsWithMTT = strncmp(transfer_data.memo.c_str(), substr.c_str(), substr.size());
+    auto startsWithMTT = 0;
     
     if (startsWithMTT == 0) {
-        string sofferid = transfer_data.memo.substr(4);
+        print("memo matches");
+        string sofferid = memo.substr(3);
         auto offerid = stoi(sofferid);
         print("\ntransfer received for offer ", offerid);
-        _tb_offers offers(_self, _self);
+        _tb_offers offers(N(monstereosmt), N(monstereosmt));
         auto itr_offer = offers.find(offerid);
-
         if (itr_offer != offers.end()) {
+            print ("offer found1");
             auto offer = *itr_offer;
             auto itr_pet = pets.find(offer.pet_id);
-        
-            eosio_assert(offer.type == 10, "E404|Offer of type " + offer.type);
+            print ("offer found2");
+            eosio_assert(offer.type != 10, "E404|Offer of type " + offer.type);
             eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
             auto pet = *itr_pet;
             // transfer money to previous owner
             string memo = "transfer for offer " + sofferid;
-            _transfervalue(pet.owner, transfer_data.quantity, memo);
-
+            print ("offer found3");
+            _transfervalue(pet.owner, quantity, memo);
+            print ("offer found4");
             // change ownership
             pets.modify(itr_pet, 0, [&](auto &r) {
                 r.owner = offer.new_owner;
             });
 
-            accounts.modify(itr_balance, transfer_data.from, [&](auto& r){
+            _tb_accounts accounts(_self, from);
+            asset new_balance;
+            auto itr_balance = accounts.find(quantity.symbol.name());
+            print("quantity.name", quantity.symbol.name());
+            eosio_assert(itr_balance != accounts.end(), "E404|Invalid currency");
+
+            accounts.modify(itr_balance, from, [&](auto& r){
                 // Assumption: total currency issued by eosio.token will not overflow asset
-                r.balance -= transfer_data.quantity;
+                r.balance -= quantity;
                 new_balance = r.balance;
             });
         }
-        
     }
 }
 
@@ -323,7 +335,7 @@ void pet::_transfervalue(name receiver, asset quantity, string memo) {
 // https://eosio.stackexchange.com/q/421/54
 
 // DO NOT include transferpet into the abi, as it is only for internal use.
-// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer))
+// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer)(handletransf))
 
 #define EOSIO_ABI_EX( TYPE, MEMBERS ) \
 extern "C" { \
@@ -375,4 +387,5 @@ EOSIO_ABI_EX(pet,
 
     // tokens deposits
     (transfer)
+    (handletransf)
 )
