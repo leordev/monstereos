@@ -22,7 +22,7 @@ void market::offerpet(uuid pet_id, name newowner, uint32_t until = 0, uint64_t a
         eosio_assert(offer.type != 10, "E404|offer can't be updated during temporary transfers");
         // eosio_assert(offer.type == 1, "you can't ask and bid at the same time. (should not happen anyway)");
         offers.modify(*itr_user_pet, pet.owner, [&](auto &r) {
-            r.value = asset(amount);
+            r.value = asset(amount, S(4,EOS));
             r.new_owner = newowner;
             r.type = type;
             r.placed_at = placed_at;
@@ -36,7 +36,7 @@ void market::offerpet(uuid pet_id, name newowner, uint32_t until = 0, uint64_t a
                 .new_owner = newowner,
                 .pet_id = pet.id,
                 .type = type,
-                .value = asset(amount),
+                .value = asset(amount, S(4,EOS)),
                 .placed_at = placed_at,
                 .ends_at = 0,
                 .transfer_ends_at = until};

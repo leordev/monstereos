@@ -73,7 +73,7 @@ public:
 
     // token deposits
     void transfer     ( uint64_t sender, uint64_t receiver );
-    void handletransf (string memo, asset quantity, account_name from);
+
     private:
 
     /* ****************************************** */
@@ -142,5 +142,7 @@ public:
                              const uint32_t &last_fed_at,
                              const uint32_t &current_time);
     void _transfervalue(name receiver, asset quantity, string memo);
+    void _handletransf (string memo, asset quantity, account_name from);
+
 
 };
