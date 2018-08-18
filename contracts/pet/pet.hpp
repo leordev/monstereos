@@ -106,7 +106,7 @@ public:
         uint32_t hunger_to_zero = 10 * HOUR;
         uint32_t min_hunger_interval = 3 * HOUR;
         uint8_t  max_hunger_points = 100;
-        uint8_t  hunger_hp_modifier = 1;
+        uint8_t  hunger_hp_modifier = 5;
         uint32_t min_awake_interval = 8 * HOUR;
         uint32_t min_sleep_period = 4 * HOUR;
         uint32_t creation_tolerance = 1 * HOUR;
