@@ -2,6 +2,7 @@
 #include "lib/utils.hpp"
 #include "lib/pet.admin.cpp"
 #include "lib/pet.battle.cpp"
+#include "../market/lib/types.hpp"
 
 using namespace utils;
 using namespace types;
@@ -78,7 +79,7 @@ void pet::updatepet(uuid pet_id) {
 
     _update(pet);
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
     });
 }
@@ -93,6 +94,22 @@ void pet::destroypet(uuid pet_id) {
 
 }
 
+void pet::transferpet(uuid pet_id, name newowner) {
+    
+    require_auth(N(monstereosmt));
+
+    print(pet_id, "| updating pet ");
+    auto itr_pet = pets.find(pet_id);
+    eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
+    auto pet = *itr_pet;
+
+    pets.modify(itr_pet, 0, [&](auto &r) {
+        r.owner = newowner;
+    });
+
+    print("new owner ", newowner);    
+}
+
 void pet::feedpet(uuid pet_id) {
 
     auto itr_pet = pets.find(pet_id);
@@ -103,7 +120,7 @@ void pet::feedpet(uuid pet_id) {
 
     auto pc = _get_pet_config();
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
 
         uint32_t current_time = now();
@@ -135,7 +152,7 @@ void pet::bedpet(uuid pet_id) {
 
     auto pc = _get_pet_config();
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
 
         uint32_t current_time = now();
@@ -165,7 +182,7 @@ void pet::awakepet(uuid pet_id) {
 
     auto pc = _get_pet_config();
 
-    pets.modify(itr_pet, 0, [&](auto &r) {
+    pets.modify(itr_pet, pet.owner, [&](auto &r) {
         r.death_at = pet.death_at;
 
         uint32_t current_time = now();
@@ -219,6 +236,53 @@ void pet::transfer(uint64_t sender, uint64_t receiver) {
 
     print("\n", name{transfer_data.from}, " deposited:       ", transfer_data.quantity);
     print("\n", name{transfer_data.from}, " funds available: ", new_balance);
+
+    _handletransf(transfer_data.memo, transfer_data.quantity, transfer_data.from);   
+
+}
+
+void pet::_handletransf(string memo, asset quantity, account_name from) {
+    string memoprefix = "MTT";
+    auto startsWithMTT = memo.rfind(memoprefix, 0);
+    
+    if (startsWithMTT == 0) {
+        print("memo matches");
+        string sofferid = memo.substr(3);
+        auto offerid = stoi(sofferid);
+        print("\ntransfer received for offer ", offerid);
+        _tb_offers offers(N(monstereosmt), N(monstereosmt));
+        auto itr_offer = offers.find(offerid);
+        if (itr_offer != offers.end()) {
+            auto offer = *itr_offer;
+            auto itr_pet = pets.find(offer.pet_id);
+            eosio_assert(itr_pet != pets.end(), "E404|Invalid pet");
+            auto pet = *itr_pet;
+            
+            eosio_assert(offer.type != 10, "E404|Offer of type " + offer.type);
+            eosio_assert(quantity.amount == offer.value.amount, "E404|amounts does not match offer's amount");
+            eosio_assert(quantity.symbol == offer.value.symbol, "E404|token does not match offer's token");
+            eosio_assert(pet.owner == offer.user, "E404|monster does to belong to offer's user");
+
+            // transfer money to previous owner
+            string memo = "transfer for offer " + sofferid;
+            _transfervalue(pet.owner, quantity, memo);
+            // change ownership
+            pets.modify(itr_pet, 0, [&](auto &r) {
+                r.owner = offer.new_owner;
+            });
+
+            _tb_accounts accounts(_self, from);
+            asset new_balance;
+            auto itr_balance = accounts.find(quantity.symbol.name());
+            eosio_assert(itr_balance != accounts.end(), "E404|Invalid currency");
+
+            accounts.modify(itr_balance, from, [&](auto& r){
+                // Assumption: total currency issued by eosio.token will not overflow asset
+                r.balance -= quantity;
+                new_balance = r.balance;
+            });
+        }
+    }
 }
 
 uint32_t pet::_calc_hunger_hp(const uint8_t &max_hunger_points, const uint32_t &hunger_to_zero,
@@ -261,60 +325,11 @@ void pet::_update(st_pets &pet) {
     }
 }
 
+void pet::_transfervalue(name receiver, asset quantity, string memo) {
+     action(permission_level{_self, N(active)}, N(eosio.token), N(transfer), std::make_tuple(N(monstereosio), receiver, quantity, memo)).send();
+}
+
 // we need to sacrifice abi generation for recipient listener
 // keep alternating the comments between EOSIO_ABI (to generate ABI)
 // and EOSIO_ABI_EX to generate the listener action
 // https://eosio.stackexchange.com/q/421/54
-
-// EOSIO_ABI(pet, (createpet)(updatepet)(feedpet)(bedpet)(awakepet)(destroypet)(battlecreate)(battlejoin)(battleleave)(battlestart)(battleselpet)(battleattack)(battlefinish)(addelemttype)(changeelemtt)(addpettype)(changepettyp)(changecrtol)(changebatma)(changebatidt)(changebatami)(changebatama)(transfer))
-
-#define EOSIO_ABI_EX( TYPE, MEMBERS ) \
-extern "C" { \
-   void apply( uint64_t receiver, uint64_t code, uint64_t action ) { \
-      if( action == N(onerror)) { \
-         /* onerror is only valid if it is for the "eosio" code account and authorized by "eosio"'s "active permission */ \
-         eosio_assert(code == N(eosio), "onerror action's are only valid from the \"eosio\" system account"); \
-      } \
-      auto self = receiver; \
-      if( code == self || code == N(eosio.token) || action == N(onerror) ) { \
-         TYPE thiscontract( self ); \
-         switch( action ) { \
-            EOSIO_API( TYPE, MEMBERS ) \
-         } \
-         /* does not allow destructor of thiscontract to run: eosio_exit(0); */ \
-      } \
-   } \
-}
-
-EOSIO_ABI_EX(pet,
-    // pet core
-    (createpet)
-    (updatepet)
-    (feedpet)
-    (bedpet)
-    (awakepet)
-    (destroypet)
-
-    // battles
-    (battlecreate)
-    (battlejoin)
-    (battleleave)
-    (battlestart)
-    (battleselpet)
-    (battleattack)
-    (battlefinish)
-
-    // admins and config setup
-    (addelemttype)
-    (changeelemtt)
-    (addpettype)
-    (changepettyp)
-    (changecrtol)
-    (changebatma)
-    (changebatidt)
-    (changebatami)
-    (changebatama)
-
-    // tokens deposits
-    (transfer)
-)

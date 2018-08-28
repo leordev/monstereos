@@ -17,6 +17,8 @@ const ELEMENTS_TABLE = 'elements'
 const PET_TYPES_TABLE = 'pettypes'
 const CONFIG_TABLE = 'petconfig2'
 const BALANCES_TABLE = 'accounts'
+const MARKET_ACCOUNT = 'monstereosmt'
+const MARKET_TABLE = 'offers'
 const TOKEN_SYMBOL = 'EOS'
 const MEMO = 'MonsterEOS Wallet Deposit'
 // const ACTIONS_API = 'https://api.eostracker.io/accounts/monstereosio/actions/to?page=1&size=300'
@@ -99,6 +101,10 @@ const getEos = () => {
 
 const getContract = async () => {
   return getEos().contract(MONSTERS_ACCOUNT);
+}
+
+const getMarketContract = async () => {
+  return getEos().contract(MARKET_ACCOUNT);
 }
 
 document.addEventListener('scatterLoaded', scatterExtension => {
@@ -332,6 +338,43 @@ app.ports.requestPlay.subscribe(async (petId) => {
 
 app.ports.requestWash.subscribe(async (petId) => {
   app.ports.feedSucceed.send('lazy developer must build "Wash" action')
+})
+
+app.ports.submitNewOwner.subscribe(async (petId, newOwner, durationOfTransfer) => {
+  const auth = getAuthorization()
+
+  const marketContract = await getMarketContract()
+  const until = Math.floor(now()/1000) + parseInt(durationOfTransfer) // in seconds
+  const transferpet = await marketContract.offerpet(petId, newOwner, until)
+    .catch(e => {
+        console.error('error on transferring pet ', e)
+        const errorMsg = (e && e.message) ||
+        'An error happened while attempting to transferring the monster'
+        app.ports.transferFailed.send(errorMsg)
+      })
+
+  console.log(transferpet)
+
+  if(transferpet) app.ports.transferSucceed.send(transferpet.transaction_id)
+})
+
+
+app.ports.requestClaim.subscribe(async (oldowner, petId) => {
+  const auth = getAuthorization()
+
+  const marketContract = await getMarketContract()
+
+  const claimpet = await marketContract.claimpet(oldowner, petId)
+    .catch(e => {
+        console.error('error on claiming pet ', e)
+        const errorMsg = (e && e.message) ||
+        'An error happened while attempting to claim the monster'
+        app.ports.claimFailed.send(errorMsg)
+      })
+
+  console.log(claimpet)
+
+  if(claimpet) app.ports.claimSucceed.send(transferpet.transaction_id)
 })
 
 /**

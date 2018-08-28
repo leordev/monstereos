@@ -23,8 +23,8 @@ cleos push action eosio.token issue '[ "monstereosio", "1000.0000 EOS", "initial
 
 # contract deployment
 echo "\nDeploying MonsterEOS Contract..."
-eosiocpp -o pet.wast pet.cpp
-# eosiocpp -g pet.abi pet.cpp ## Consider uncommenting EOSIO_ABI_EX
+eosiocpp -o pet.wast petcode.cpp
+eosiocpp -g pet.abi petabi.cpp 
 cleos set contract monstereosio ../pet
 
 # tests users accounts
