@@ -1,3 +1,5 @@
 declare module '*.svg'
 declare module '*.png'
 declare module '*.jpg'
+declare module '*.gltf'
+declare module 'react-monstereos-profile'
