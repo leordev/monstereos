@@ -3,7 +3,13 @@ import { MonsterType, Arena, MonsterArenaStats, Element, isWatcher, BATTLE_PHASE
 import { State, pushNotification } from "../../store"
 import { getEosAccount } from "../../utils/scatter"
 import { connect } from "react-redux"
-import { monsterImageSrc } from "../monsters/monsters"
+import {
+  monsterImageSrc,
+  monsterModelSrc,
+  validateTypeId
+} from "../monsters/monsters"
+import getConfig from "../monsters/monsterTypeConfiguration"
+import { Monster3DProfile, ActionType } from "react-monstereos-profile"
 
 const AVAILABLE_ARENA_ARTS = 18
 
@@ -58,8 +64,8 @@ const elementButton = (
     onClick={onClick}>
     <i className={`fa fa-${elementDisplay[1]}`} />
   </a> : <React.Fragment>
-    <a className={elementClass} onClick={() => onClick(0,-1)}>{elementDisplay[2]} Attack <i className="fa fa-ban" style={{marginLeft:5}} /></a>
-  </React.Fragment>
+      <a className={elementClass} onClick={() => onClick(0, -1)}>{elementDisplay[2]} Attack <i className="fa fa-ban" style={{ marginLeft: 5 }} /></a>
+    </React.Fragment>
 }
 
 const hpBar = (hpValue: number, monsterName: string) => {
@@ -81,7 +87,7 @@ const winnerBanner = (winner: string, isWinner?: boolean) => {
   const status = isWinner === undefined ?
     ["has-text-info", `${winner} WON!`] :
     isWinner ? ["has-text-success", "You WON!"] :
-    ["has-text-danger", "You LOST!"]
+      ["has-text-danger", "You LOST!"]
 
   return <div className={`battle-winner-banner ${status[0]}`}>
     {status[1]}
@@ -149,7 +155,7 @@ class BattleArena extends React.Component<Props, ReactState> {
     }).filter((item) => item.hpDiff !== 0)
 
     if (newLogs.length) {
-      this.setState({hpLog: this.state.hpLog.concat(newLogs)})
+      this.setState({ hpLog: this.state.hpLog.concat(newLogs) })
     }
   }
 
@@ -166,7 +172,7 @@ class BattleArena extends React.Component<Props, ReactState> {
 
     const myTurn = isBattleGoing &&
       (arena.commits[0].player === identity ||
-      Date.now() - arena.lastMoveAt > 60000)
+        Date.now() - arena.lastMoveAt > 60000)
 
     const monsterClass =
       (myMonster ? "my-monster" : "enemy-monster") +
@@ -176,15 +182,40 @@ class BattleArena extends React.Component<Props, ReactState> {
       () => enemySelection(monster.pet_id) :
       undefined
 
+    const { position, rotation, cameraPosition } = getConfig(monster.pet_type)
+
     return <div className="arena-monster"
       key={monster.pet_id}>
-      <figure
-        className="image">
-        <img
-          src={monsterImageSrc(monster.pet_type)}
-          className={monsterClass}
-          onClick={enemyClick} />
-      </figure>
+      {
+        validateTypeId(monster.pet_type)
+          ? (
+            <div
+              className={`image ${monsterClass}`}
+              onClick={enemyClick}
+            >
+              <Monster3DProfile
+                typeId={monster.pet_type}
+                path={monsterModelSrc(monster.pet_type)}
+                action={ActionType.IDLE}
+                position={position}
+                rotation={rotation}
+                cameraPosition={cameraPosition}
+                size={{ width: "200px", height: "228px" }}
+                background={{ alpha: 0 }}
+                zoom={false}
+              />
+            </div>
+          )
+          : (
+            <figure
+              className="image">
+              <img
+                src={monsterImageSrc(monster.pet_type)}
+                className={monsterClass}
+                onClick={enemyClick} />
+            </figure>
+          )
+      }
       {this.hpNotification(monster.pet_id)}
       {hpBar(monster.hp, monster.player)}
       {myMonster && myTurn && this.attackButtons(monster)}
@@ -193,6 +224,7 @@ class BattleArena extends React.Component<Props, ReactState> {
         this.confirmAttackButton()}
     </div>
   }
+
 
   private hpNotification = (petId: number) => {
     const { hpLog } = this.state
@@ -227,11 +259,11 @@ class BattleArena extends React.Component<Props, ReactState> {
 
     return <div className="buttons elements">
       {pet.pet_id === selectedPetId ?
-      elementButton(selectedElementId!, attackSelection, true) :
-      elements.map((element) => {
-        const doAttack = () => attackSelection(pet.pet_id, element)
-        return elementButton(element, doAttack, false)
-      })}
+        elementButton(selectedElementId!, attackSelection, true) :
+        elements.map((element) => {
+          const doAttack = () => attackSelection(pet.pet_id, element)
+          return elementButton(element, doAttack, false)
+        })}
     </div>
   }
 }
