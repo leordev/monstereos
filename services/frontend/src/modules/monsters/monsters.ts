@@ -88,3 +88,6 @@ export const calcMonsterStats = (
 
 export const monsterImageSrc = (typeId: number) =>
   (`/images/monsters/monster-${typeId}.png`)
+
+export const monsterModelSrc = (typeId: number) =>
+  (`/models/monsters/monster-${typeId}.gltf`)

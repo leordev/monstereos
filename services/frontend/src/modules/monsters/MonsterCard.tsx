@@ -1,11 +1,16 @@
 import * as React from "react"
 import * as moment from "moment"
-import { MonsterProps, monsterImageSrc } from "./monsters"
+import {
+  MonsterProps,
+  monsterImageSrc,
+  monsterModelSrc
+} from "./monsters"
 import { State, GlobalConfig, NOTIFICATION_SUCCESS, pushNotification, NOTIFICATION_ERROR } from "../../store"
 import { connect } from "react-redux"
 import { getEosAccount } from "../../utils/scatter"
 import { trxPet } from "../../utils/eos"
 import { Link } from "react-router-dom"
+import { Monster3DProfile, ActionType } from "react-monstereos-profile"
 
 interface Props {
   monster: MonsterProps,
@@ -41,7 +46,7 @@ class MonsterCard extends React.Component<Props, {}> {
           <div className="card-content">
             {this.renderHeader()}
           </div>
-          {this.renderImage()}
+          {this.privateRenderMonster(monster.type)}
           {!monster.deathAt && this.renderStats()}
           {hasControl && this.renderFooter()}
         </div>
@@ -72,6 +77,33 @@ class MonsterCard extends React.Component<Props, {}> {
     )
   }
 
+  private renderProfile() {
+    const { monster } = this.props
+    return (
+      <Monster3DProfile
+        typeId={monster.type}
+        path={monsterModelSrc(monster.type)}
+        action={monster.isSleeping
+          ? ActionType.SLEEPING
+          : ActionType.IDLE}
+        position={{ y: -50, z: 6 }}
+        rotation={{ y: Math.PI }}
+        size={{ height: "228px" }}
+        background={{ alpha: 0 }}
+        zoom={false}
+      />
+    )
+  }
+
+  private privateRenderMonster(typeId: number) {
+    // temporal validation while we have few 3D models
+    const validTypeIds = [0, 1]
+    if (validTypeIds.includes(typeId)) {
+      return this.renderProfile()
+    }
+    return this.renderImage()
+  }
+
   private renderHeader() {
 
     const { monster, hideLink } = this.props
@@ -93,24 +125,24 @@ class MonsterCard extends React.Component<Props, {}> {
           {monster.name}
           <small className="is-pulled-right">#{monster.id}</small>
         </span>
-        <br/>
-        { monster.deathAt ?
-        <React.Fragment>
-          <span className="is-6 has-text-danger">Stayed alive for {aliveDurationText}</span>
-          <br/>
-          <span className="is-6 has-text-danger"><time dateTime={deathAtIso}>DEAD IN {deathAtText}</time></span>
-        </React.Fragment>
-        : <span className="has-text-success">Is alive for {aliveDurationText}</span>
+        <br />
+        {monster.deathAt ?
+          <React.Fragment>
+            <span className="is-6 has-text-danger">Stayed alive for {aliveDurationText}</span>
+            <br />
+            <span className="is-6 has-text-danger"><time dateTime={deathAtIso}>DEAD IN {deathAtText}</time></span>
+          </React.Fragment>
+          : <span className="has-text-success">Is alive for {aliveDurationText}</span>
         }
       </React.Fragment>
 
     return (
       <div className="monster-card-header">
-        { !hideLink ?
+        {!hideLink ?
           <Link to={`/monster/${monster.id}`} className="monster-header-link">
             {headerContent}
           </Link>
-        :
+          :
           headerContent
         }
       </div>
@@ -145,12 +177,12 @@ class MonsterCard extends React.Component<Props, {}> {
     let actions: MonsterAction[] = []
 
     if (!hideActions && monster.deathAt) {
-      actions.push({action: this.requestDestroy, label: "Delete Monster"})
+      actions.push({ action: this.requestDestroy, label: "Delete Monster" })
     } else if (!hideActions && monster.isSleeping) {
-      actions.push({action: this.requestAwake, label: "Wake up!"})
+      actions.push({ action: this.requestAwake, label: "Wake up!" })
     } else if (!hideActions) {
-      actions.push({action: this.requestFeed, label: "Feed"})
-      actions.push({action: this.requestSleep, label: "Bed Time!"})
+      actions.push({ action: this.requestFeed, label: "Feed" })
+      actions.push({ action: this.requestSleep, label: "Bed Time!" })
     }
 
     if (customActions) {
