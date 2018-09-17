@@ -19,3 +19,49 @@ $logo-font: 'Freckle Face', cursive;
 @import "./_battles.scss";
 @import "./_buttons.scss";
 @import "./_layout.scss";
+
+.logo-small-img {
+  max-width: 65%;
+}
+
+.navbar {
+  background-color: #18265c;
+  min-height: 60px; }
+.navbar .navbar-menu {
+  box-shadow: none;
+  border-bottom: 1px solid #eee; }
+.navbar-burger {
+  color: #00fecb;
+  margin-top: 12px; }
+.logo {
+  margin: 12px; }
+.section {
+  background-color: rgb(26, 35, 80);
+  padding: 1rem; }
+.footer {
+  padding-bottom: 3rem; }
+.card {
+  /* background-color: #18265c; */
+  background: -moz-linear-gradient(45deg, #071439 0%, #046c78 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(45deg, #071439 0%,#046c78 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(45deg, #071439 0%,#046c78 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  -webkit-box-shadow: 0px 0px 10px 1px #00ffea;
+  -moz-box-shadow: 0px 0px 10px 1px #00ffea;
+  box-shadow: 0px 0px 10px 1px #00ffea;
+}
+.content h1 {
+  font-family: $logo-font;
+  color: #00ffea;
+  font-size: 1.5em; }
+.content h2 {
+  color: #00ffea;
+  font-size: 1.25em; }
+.content h3 {
+  color: #00ffea;
+  font-size: 1em; } 
+.button {
+  color: #00ffea;
+}

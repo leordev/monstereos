@@ -6,7 +6,7 @@ const HomeScreen = (props: any) => (
     <div className="columns">
       <div className="column">
         <figure className="image">
-          <img alt="Tamagotchi Monsters" src="/images/monsters/monster-105.png" />
+          <img alt="Tamagotchi Monsters" src="/images/ui/logo-monster.png" />
         </figure>
       </div>
       <div className="column">

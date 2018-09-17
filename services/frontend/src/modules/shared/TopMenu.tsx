@@ -29,7 +29,9 @@ class TopMenu extends React.Component<Props, ReactState> {
     return (
       <nav className="navbar">
         <div className="navbar-brand">
-          <span className="logo">MonsterEOS</span>
+          <div className="logo-small-img">
+            <img alt="MonsterEOS" src="/images/ui/logo-small.png" />
+          </div>
           <a
             role="button"
             className="navbar-burger"
