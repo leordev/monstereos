@@ -7434,8 +7434,8 @@ react-markdown@^3.6.0:
     xtend "^4.0.1"
 
 "react-monstereos-profile@https://github.com/VertexStudio/monster-profile-react-component":
-  version "0.1.4"
-  resolved "https://github.com/VertexStudio/monster-profile-react-component#ed55c5206e473db1d03b4df09e35faf0a32753af"
+  version "0.1.5"
+  resolved "https://github.com/VertexStudio/monster-profile-react-component#b11f31339f299a181e252c4c500e452b6853d84f"
   dependencies:
     react-jss "^8.6.1"
 

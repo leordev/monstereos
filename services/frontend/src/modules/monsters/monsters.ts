@@ -95,6 +95,13 @@ export const getCurrentAction = (monster: MonsterProps, ActionType: any) => {
   return ActionType.IDLE
 }
 
+/**
+ * temporal validator while we have few 3D models
+ * @param typeId id of the monster
+ */
+export const validateTypeId = (typeId: number) =>
+  [0, 1].includes(typeId)
+
 export const monsterImageSrc = (typeId: number) =>
   (`/images/monsters/monster-${typeId}.png`)
 

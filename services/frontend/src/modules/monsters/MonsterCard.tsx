@@ -4,7 +4,8 @@ import {
   MonsterProps,
   monsterImageSrc,
   monsterModelSrc,
-  getCurrentAction
+  getCurrentAction,
+  validateTypeId
 } from "./monsters"
 import getConfig from "./monsterTypeConfiguration"
 import { State, GlobalConfig, NOTIFICATION_SUCCESS, pushNotification, NOTIFICATION_ERROR } from "../../store"
@@ -48,7 +49,7 @@ class MonsterCard extends React.Component<Props, {}> {
           <div className="card-content">
             {this.renderHeader()}
           </div>
-          {this.privateRenderMonster(monster.type)}
+          {this.renderMonster(monster.type)}
           {!monster.deathAt && this.renderStats()}
           {hasControl && this.renderFooter()}
         </div>
@@ -99,14 +100,10 @@ class MonsterCard extends React.Component<Props, {}> {
     )
   }
 
-  private privateRenderMonster(typeId: number) {
-    // temporal validation while we have few 3D models
-    const validTypeIds = [0, 1]
-    if (validTypeIds.includes(typeId)) {
-      return this.render3DProfile()
-    }
-    return this.renderImage()
-  }
+  private renderMonster = (typeId: number) =>
+    validateTypeId(typeId)
+      ? this.render3DProfile()
+      : this.renderImage()
 
   private renderHeader() {
 
