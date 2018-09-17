@@ -3,8 +3,10 @@ import * as moment from "moment"
 import {
   MonsterProps,
   monsterImageSrc,
-  monsterModelSrc
+  monsterModelSrc,
+  getCurrentAction
 } from "./monsters"
+import getConfig from "./monsterTypeConfiguration"
 import { State, GlobalConfig, NOTIFICATION_SUCCESS, pushNotification, NOTIFICATION_ERROR } from "../../store"
 import { connect } from "react-redux"
 import { getEosAccount } from "../../utils/scatter"
@@ -77,17 +79,19 @@ class MonsterCard extends React.Component<Props, {}> {
     )
   }
 
-  private renderProfile() {
+  private render3DProfile() {
+
     const { monster } = this.props
+    const { position, rotation, cameraPosition } = getConfig(monster.type)
+
     return (
       <Monster3DProfile
         typeId={monster.type}
         path={monsterModelSrc(monster.type)}
-        action={monster.isSleeping
-          ? ActionType.SLEEPING
-          : ActionType.IDLE}
-        position={{ y: -50, z: 6 }}
-        rotation={{ y: Math.PI }}
+        action={getCurrentAction(monster, ActionType)}
+        position={position}
+        rotation={rotation}
+        cameraPosition={cameraPosition}
         size={{ height: "228px" }}
         background={{ alpha: 0 }}
         zoom={false}
@@ -99,7 +103,7 @@ class MonsterCard extends React.Component<Props, {}> {
     // temporal validation while we have few 3D models
     const validTypeIds = [0, 1]
     if (validTypeIds.includes(typeId)) {
-      return this.renderProfile()
+      return this.render3DProfile()
     }
     return this.renderImage()
   }
