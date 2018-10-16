@@ -3,6 +3,7 @@
 #include "pet.admin.cpp"
 #include "pet.battle.cpp"
 #include "pet.market.cpp"
+#include "pet.messages.cpp"
 
 using namespace utils;
 using namespace types;

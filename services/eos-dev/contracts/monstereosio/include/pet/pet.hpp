@@ -93,6 +93,9 @@ public:
     void signup       ( name user );
     void transfer     ( uint64_t sender, uint64_t receiver );
 
+    // messaging
+    void messagefrom  (uuid petid, string message);
+    
     private:
 
     /* ****************************************** */

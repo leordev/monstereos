@@ -274,6 +274,17 @@
         }
       ]
     },{
+      "name": "messagefrom",
+      "base": "",
+      "fields": [{
+          "name": "pet_id",
+          "type": "uuid"
+        },{
+          "name": "message",
+          "type": "string"
+        }
+      ]
+    },{
       "name": "feedpet",
       "base": "",
       "fields": [{
@@ -620,6 +631,10 @@
       "name": "destroypet",
       "type": "destroypet",
       "ricardian_contract": "---\ntitle: Destroy Monster\nsummary: Delete and destroy a Monster forever\nicon: https://monstereos.io/favicon.png#e6479a7f15b9f19775b09703a5973af41e6e6c0eefbe0c09b9f032a286248b74\n---\n\n## Destroy Terms & Conditions\n\nI, the owner of the pet {{pet_id}}, am destroying this monster\nbecause I no longer have interest in taking care of it.\n\nI understand that this action cannot be undone, the monster will\nbe cruelty destroyed and no longer be accessible or recreated by\nanyone.\n\nI understand that monsters actions are not reversible after the\n{{$transaction.delay_sec}} seconds or other delay as configured\nby my own permissions.\n\nIf this action fails to be irreversibly confirmed for technical issues\nor failure, I agree that I need to attempt to submit this action again,\nand also the subsequent interactions that I could possibly being submitted\nin this interval.\n\n"
+    },{
+      "name": "messagefrom",
+      "type": "messagefrom",
+      "ricardian_contract": ""
     },{
       "name": "techrevive",
       "type": "techrevive",

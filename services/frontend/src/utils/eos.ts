@@ -153,6 +153,16 @@ export const trxPlaceBidMarket = async (
     return contract.bidpet(petId, eosAuthorization.account.name, 0, amount, eosAuthorization.permission).catch(trxError)
 }
 
+export const trxMessageFrom = async (
+  scatter: any,
+  petId: number,
+  message: string
+) => {
+  const eosAuthorization = getEosAuthorization(scatter.identity)
+  const contract = await getContract(scatter, network, MONSTERS_ACCOUNT)
+  return contract.messagefrom(petId, message, eosAuthorization.permission).catch(trxError)
+}
+
 // eos api
 const e2DefaultRpc = new e2Rpc.JsonRpc(CHAIN_URL, { fetch })
 const e2HistoryRpc = new e2Rpc.JsonRpc(HISTORY_CHAIN_URL, { fetch })

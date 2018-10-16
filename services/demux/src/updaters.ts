@@ -295,6 +295,25 @@ const battleattack = async (db: any, payload: any, blockInfo: BlockInfo) => {
 
 }
 
+const messagefrom =  async (db: any, payload: any, blockInfo: BlockInfo) => {
+
+  console.info("\n\n==== Message From ====")
+  console.info("\n\nUpdater Payload >>> \n", payload)
+  console.info("\n\nUpdater Block Info >>> \n", blockInfo)
+
+  const data = {
+    pet_id: payload.data.pet_id,
+    message: payload.data.message,
+    created_block: blockInfo.blockNumber,
+    created_trx: payload.transactionId,
+    created_at: blockInfo.timestamp,
+    created_eosacc: payload.authorization[0].actor,
+  }
+
+  const res = await db.messages.insert(data)
+  console.info("DB State Result >>> ", res)
+}
+
 const updaters = [
   {
     actionType: "monstereosio::createpet",
@@ -339,6 +358,10 @@ const updaters = [
   {
     actionType: "monstereosio::battleattack",
     updater: battleattack,
+  },
+  {
+    actionType: "monstereosio::messagefrom",
+    updater: messagefrom,
   },
 ]
 
