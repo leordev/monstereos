@@ -1,26 +1,28 @@
-FROM keymetrics/pm2:8-alpine
-
-RUN npm install pm2@3.1.2 -g
+FROM keymetrics/pm2:10-alpine
 
 ARG SERVICE
 
+# Install Global Depedencies
+RUN apk add --no-cache yarn
 RUN apk add --no-cache git
 RUN apk add --no-cache bash
 RUN apk add --no-cache vim
 RUN apk add --no-cache postgresql-client
+RUN yarn global add pm2@3.1.2
 
+# Install pm2 modules
 RUN pm2 install typescript
 RUN pm2 install ts-node
 
-COPY ./install-all-local.sh /opt/application/docker/install-all-local.sh
-COPY ./package.json /opt/application/node/package.json
+# Create app directory
+WORKDIR /opt/application
 
-WORKDIR /opt/application/node
+# Install application dependencies
+COPY package.json ./
+COPY yarn.lock ./
+RUN yarn
 
-RUN /opt/application/docker/install-all-local.sh
+EXPOSE 3030
 
-COPY ./ /opt/application/node
-
-EXPOSE 80
-
+# Use pm2-dev to enable live reload
 CMD ["pm2-dev", "start", "pm2.config.js"]

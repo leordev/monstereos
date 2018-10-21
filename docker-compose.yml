@@ -63,6 +63,9 @@ services:
       args:
         SERVICE: "demux"
     image: monstereos/demux
+    volumes:
+      - ./services/demux:/opt/application  # mount demux service folder
+      - /opt/application/node_modules # prevents host/container conflicts
     depends_on:
       - mongo
       - postgres
