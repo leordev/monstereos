@@ -1,4 +1,4 @@
-version: "3.4"
+version: '3.5'
 
 services:
 
@@ -7,7 +7,7 @@ services:
     volumes:
       - ../.monstereos/.pgsql-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
@@ -15,6 +15,8 @@ services:
       DB_USER: user
       DB_PASSWORD: pass
       POSTGRES_DB: monstereosio
+    networks:
+      monstereos:
 
   mongo:
     image: mongo
@@ -22,7 +24,9 @@ services:
     volumes:
       - ../.monstereos/.mongo-data:/data/db
     ports:
-      - "27017:27017"
+      - '27017:27017'
+    networks:
+      monstereos:
 
   fullnode:
     image: eosio/eos:v1.2.4
@@ -30,16 +34,18 @@ services:
     #--genesis-json /opt/eosio/bin/genesis.json
     stop_grace_period: 3m0s
     ports:
-      - "8840:8888"
-      - "9840:9876"
+      - '8840:8888'
+      - '9840:9876'
     depends_on:
       - mongo
       - eosiodev
     volumes:
-      - "fullnode:/opt/eosio/bin/data-dir"
-      - "./services/eos-node/config-full-node.ini:/opt/eosio/bin/data-dir/config.ini"
-      # - "./services/eos-node/config-main-node.ini:/opt/eosio/bin/data-dir/config.ini"
-      # - "./services/eos-node/mainnet-genesis.json:/opt/eosio/bin/genesis.json"
+      - 'fullnode:/opt/eosio/bin/data-dir'
+      - './services/eos-node/config-full-node.ini:/opt/eosio/bin/data-dir/config.ini'
+      # - './services/eos-node/config-main-node.ini:/opt/eosio/bin/data-dir/config.ini'
+      # - './services/eos-node/mainnet-genesis.json:/opt/eosio/bin/genesis.json'
+    networks:
+      monstereos:
 
   # only required for dev
   eosiodev:
@@ -50,18 +56,20 @@ services:
     stop_grace_period: 3m0s
     command: /opt/eosio/bin/nodeos --config-dir /opt/application/config --data-dir /root/.local/share -e
     ports:
-      - "8888:8888"
-      - "9830:9876"
+      - '8888:8888'
+      - '9830:9876'
     volumes:
       - eosiodevapp:/root/.local/share
       - ./services/eos-dev:/opt/application
+    networks:
+      monstereos:
 
   demux:
     build:
       context: ./services/demux
       dockerfile: ./Dockerfile
       args:
-        SERVICE: "demux"
+        SERVICE: 'demux'
     image: monstereos/demux
     volumes:
       - ./services/demux:/opt/application  # mount demux service folder
@@ -77,13 +85,19 @@ services:
       DB_NAME: monstereosio
       DB_HOST: postgres
       DB_SCHEMA: pets
-      CHAIN_HOST: "http://eosiodev:8888"
+      CHAIN_HOST: 'http://eosiodev:8888'
       CHAIN_INIT_BLOCK: 10
-      MONGO_URI: "mongodb://mongo:27017"
+      MONGO_URI: 'mongodb://mongo:27017'
       MONGO_DB: EOSFN
     ports:
-      - "3030:3030"
+      - '3030:3030'
+    networks:
+      monstereos:
 
 volumes:
   eosiodevapp:
   fullnode:
+
+networks: 
+  monstereos:
+    name: monstereos
