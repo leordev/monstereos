@@ -20,5 +20,8 @@ temp
 .mongo-data
 .pgsql-data
 
+# database data
+.dbdata/
+
 # wallet keys
 keys
