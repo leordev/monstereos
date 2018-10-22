@@ -12,3 +12,5 @@ COPY ./ /opt/application
 VOLUME /opt/application
 
 WORKDIR /opt/eosio/bin
+
+CMD /opt/application/start.sh

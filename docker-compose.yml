@@ -30,12 +30,18 @@ services:
 
   fullnode:
     image: eosio/eos:v1.2.4
-    command: nodeosd.sh --http-alias=fullnode:8888 --http-alias=127.0.0.1:8888 --http-alias=localhost:8888
+    build:
+      context: ./services/eos-node
+      dockerfile: Dockerfile
+    image: monstereos/eosdev
     #--genesis-json /opt/eosio/bin/genesis.json
     stop_grace_period: 3m0s
     ports:
       - '8840:8888'
       - '9840:9876'
+    environment:
+      WAIT_HOSTS: mongo:27017, eosiodev:8888
+      WAIT_HOSTS_TIMEOUT: 60
     depends_on:
       - mongo
       - eosiodev
@@ -54,7 +60,6 @@ services:
       dockerfile: Dockerfile
     image: monstereos/eosdev
     stop_grace_period: 3m0s
-    command: /opt/eosio/bin/nodeos --config-dir /opt/application/config --data-dir /root/.local/share -e
     ports:
       - '8888:8888'
       - '9830:9876'
@@ -89,6 +94,8 @@ services:
       CHAIN_INIT_BLOCK: 10
       MONGO_URI: 'mongodb://mongo:27017'
       MONGO_DB: EOSFN
+      WAIT_HOSTS: postgres:5432, mongo:27017
+      WAIT_HOSTS_TIMEOUT: 60
     ports:
       - '3030:3030'
     networks:

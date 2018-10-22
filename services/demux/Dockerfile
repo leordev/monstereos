@@ -24,5 +24,9 @@ RUN yarn
 
 EXPOSE 3030
 
-# Use pm2-dev to enable live reload
-CMD ["pm2-dev", "start", "pm2.config.js"]
+## Add the wait script to the image
+ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /wait
+RUN chmod +x /wait
+
+## Launch the wait tool and then use pm2-dev to start the app with live reload
+CMD /wait && ./start.sh

@@ -131,6 +131,13 @@ yarn start
 
 Feel free to build any other apps and/or dockerize it. We didn't create a docker container for it because we usually build the static files (`yarn build`) and serve it on `gh-pages` branch.
 
+### Troubleshooting
+
+- https://developers.eos.io/eosio-nodeos/docs/troubleshooting
+- https://github.com/enaqx/awesome-react#debugging-react 
+- https://docs.docker.com/compose/reference/logs/
+- https://medium.com/@betz.mark/ten-tips-for-debugging-docker-containers-cde4da841a1d
+
 ### EOS Dream Stack
 
 You can build any Dapp using the above structure. Tweak the structure a little bit to satisfy all your needs, i.e.: you can change the postgres for other database as mongo or mysql; you might not need demux and the backend if your app is very basic, allowing the frontend to read directly from the chain; change the frontend to whatever framework you want to use as Vue or Angular, not only this but your frontend can be a mobile native app, why not?
