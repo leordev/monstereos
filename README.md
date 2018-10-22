@@ -96,9 +96,16 @@ We structured everything in microservices and it can be automagically initialize
 After you installed docker just run the following commands:
 
 **Start docker containers and Create postgres database and init chain and monster data**
+
 ```
 ./setup.sh
 ```
+
+Tip: Before continuing with setup run `docker-compose logs -f` to make sure the nodes are running fine.
+
+<p align="center">
+	<img src="docs/assets/setupsh.png" width="600">
+</p>
 
 Now that you have installed everything you can always start the app with the following command:
 
@@ -137,6 +144,15 @@ Feel free to build any other apps and/or dockerize it. We didn't create a docker
 - https://github.com/enaqx/awesome-react#debugging-react 
 - https://docs.docker.com/compose/reference/logs/
 - https://medium.com/@betz.mark/ten-tips-for-debugging-docker-containers-cde4da841a1d
+
+*Removing all data*
+
+Run the following comands on the root directory
+```shell
+docker-compose down 
+docker volume prune
+rm -rf .dbdata
+```
 
 ### EOS Dream Stack
 
