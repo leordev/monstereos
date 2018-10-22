@@ -147,11 +147,8 @@ Feel free to build any other apps and/or dockerize it. We didn't create a docker
 
 *Removing all data*
 
-Run the following comands on the root directory
-```shell
-docker-compose down 
-docker volume prune
-rm -rf .dbdata
+```
+./flush.sh
 ```
 
 ### EOS Dream Stack
