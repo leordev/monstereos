@@ -2,10 +2,8 @@
 
 echo 'Starting fullnode ...'
 
-echo 'DATADIR='$DATADIR
-
-if [ "$(ls -A $DATADIR)" ]; then
-  /opt/eosio/bin/nodeosd.sh --data-dir $DATADIR --hard-replay 
+if [ "$(ls -A $DATA_DIR)" ]; then
+  /opt/eosio/bin/nodeosd.sh --data-dir $DATA_DIR --hard-replay 
 else
-  /opt/eosio/bin/nodeosd.sh --data-dir $DATADIR --genesis-json genesis.json --delete-all-blocks
+  /opt/eosio/bin/nodeosd.sh --data-dir $DATA_DIR --genesis-json genesis.json --delete-all-blocks
 fi

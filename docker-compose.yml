@@ -33,8 +33,7 @@ services:
     build:
       context: ./services/eos-node
       dockerfile: Dockerfile
-    image: monstereos/eosdev
-    #--genesis-json /opt/eosio/bin/genesis.json
+    image: monstereos/fullnode
     stop_grace_period: 3m0s
     ports:
       - '8840:8888'
@@ -42,6 +41,7 @@ services:
     environment:
       WAIT_HOSTS: mongo:27017, eosiodev:8888
       WAIT_HOSTS_TIMEOUT: 60
+      DATA_DIR: /opt/eosio/bin/data-dir
     depends_on:
       - mongo
       - eosiodev
@@ -58,11 +58,14 @@ services:
     build:
       context: ./services/eos-dev
       dockerfile: Dockerfile
-    image: monstereos/eosdev
+    image: monstereos/eosiodev
     stop_grace_period: 3m0s
     ports:
       - '8888:8888'
       - '9830:9876'
+    environment:
+      DATA_DIR: /root/.local/share 
+      CONFIG_DIR: /opt/application/config 
     volumes:
       - eosiodevapp:/root/.local/share
       - ./services/eos-dev:/opt/application
