@@ -1,3 +1,6 @@
+echo "Building images"
+docker-compose build
+
 echo "Initializing docker containers"
 docker-compose up -d mongo postgres
 sleep 5s
