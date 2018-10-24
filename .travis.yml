@@ -9,7 +9,7 @@ addons:
       - docker-ce
 
 env:
-  - DOCKER_COMPOSE_VERSION: 3
+  - DOCKER_COMPOSE_VERSION: 1.22.0
 
 before_install:
   # Install Docker Compose
