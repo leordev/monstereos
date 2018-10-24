@@ -53,6 +53,7 @@
     "start-ts": "react-scripts-ts start --host 0.0.0.0",
     "start": "npm-run-all -p watch-css start-ts",
     "build": "npm run build-css && react-scripts-ts build",
+    "build:jungle": "./jungle-build.sh",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
     "lint": "tslint 'src/**/*.{ts,tsx}'"

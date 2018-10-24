@@ -1,0 +1,21 @@
+# Related to YARN_FLAGS https://git.io/fx1W5  https://git.io/fx1RF  # debug with --verbose
+[build]
+  base    = "./services/frontend"
+  command = "echo $YARN_FLAGS && yarn build" 
+  publish = "./services/frontend/build"
+
+[build.environment]
+  NODE_VERSION = "10.12.0"
+  YARN_FLAGS = "--ignore-optional --frozen-lockfile --network-timeout 1000000 --network-concurrency 1 --verbose"
+  # TODO: fix YARN_FLAGS have no effect http://bit.ly/2EJukN0  https://git.io/fx1xy
+
+[context.production.environment] 
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "test"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

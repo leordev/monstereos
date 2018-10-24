@@ -19,10 +19,10 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
 
 install:
-  - docker-compose build demux
+  - docker-compose build monstereos/demux
   - docker build -t monstereos/frontend ./services/frontend
 
 script:
-  - docker run demux yarn lint
+  - docker run monstereos/demux yarn lint
  # - docker run demux yarn test  # no tests yet
   - docker run monstereos/frontend yarn lint
