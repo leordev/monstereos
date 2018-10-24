@@ -233,9 +233,9 @@ const battleJoin = async (
   // insert new picks
   const picks = pickPets.map((petId: number) =>
     db.battle_picks.save({
+      picker,
       battle_id: battleId,
       pet_id: petId,
-      picker,
     }))
 
   await Promise.all(picks)

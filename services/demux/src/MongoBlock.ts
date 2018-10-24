@@ -72,8 +72,8 @@ export class MongoBlock implements Block {
         return {
           type: `${action.account}::${action.name}`,
           payload: {
-            transactionId: trx.id,
             actionIndex,
+            transactionId: trx.id,
             ...action,
           },
         }

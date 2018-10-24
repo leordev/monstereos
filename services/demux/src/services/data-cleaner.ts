@@ -1,12 +1,12 @@
 import { Rpc } from "eosjs2"
 import massive from "massive"
 import moment from "moment"
-import fetch from "node-fetch"
+import nodeFetch from "node-fetch"
 
 const BLOCK_SYNC_TOLERANCE = process.env.BLOCK_SYNC_TOLERANCE || 10
 
 const NODEOS = process.env.CHAIN_HOST || "http://localhost:8840"
-const rpc = new Rpc.JsonRpc(NODEOS, { fetch })
+const rpc = new Rpc.JsonRpc(NODEOS, { fetch: nodeFetch })
 
 const dbConfig = {
   user: process.env.DB_USER || "user",
@@ -39,7 +39,7 @@ const updatePetsWithoutTypes = async (db: any) => {
     const pendingPets = await db.pets.find({type_id: PENDING_TYPE_PET, destroyed_at: EMPTY_TIMESTAMP}, { limit: 100 })
 
     if (pendingPets.length) {
-      console.info(pendingPets.length + " Pets to Update Type")
+      console.info(`${pendingPets.length} Pets to Update Type`)
 
       const pendingPetsChain = pendingPets.map((pet: any) => {
         return rpc.get_table_rows({
@@ -77,7 +77,7 @@ const killMonsters = async (db: any, dbFull: any) => {
     const pendingPets = await db.pets.find({death_at: EMPTY_TIMESTAMP})
 
     if (pendingPets.length) {
-      console.info(pendingPets.length + " Pets to Check Death")
+      console.info(`${pendingPets.length}  Pets to Check Death`)
 
       const pendingPetsIds = pendingPets.map((pet: any) => pet.id).join(",")
 
@@ -102,7 +102,7 @@ const killMonsters = async (db: any, dbFull: any) => {
 
         const deathAt = isDead ? moment(deathTime).toISOString() : pet.death_at
 
-        return {id: pet.id, isDead, deathAt }
+        return { isDead, deathAt, id: pet.id }
       }).filter((pet: any) => pet.isDead)
 
       const updatedDeadPets = deadPets.map((pet: any) => (db.pets.save({id: pet.id, death_at: pet.deathAt})))
