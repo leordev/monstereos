@@ -4,7 +4,7 @@ services:
   - docker
 
 install:
-  - docker build -t monstereos/frontend ./services/demux 
+  - docker build -t monstereos/demux ./services/demux 
   - docker build -t monstereos/frontend ./services/frontend
 
 script:
