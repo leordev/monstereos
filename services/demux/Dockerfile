@@ -24,6 +24,9 @@ RUN yarn
 
 EXPOSE 3030
 
+# Copy app source -- required for CI/CD, overwritten by docker compose mounting 
+COPY . .
+
 ## Add the wait script to the image
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /wait
 RUN chmod +x /wait

@@ -3,26 +3,10 @@ sudo: required
 services:
   - docker
 
-addons:
-  apt:
-    packages:
-      - docker-ce
-
-env:
-  - DOCKER_COMPOSE_VERSION: 1.22.0
-
-before_install:
-  # Install Docker Compose
-  - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-  - chmod +x docker-compose
-  - sudo mv docker-compose /usr/local/bin
-
 install:
-  - docker-compose build monstereos/demux
+  - docker build -t monstereos/frontend ./services/demux 
   - docker build -t monstereos/frontend ./services/frontend
 
 script:
   - docker run monstereos/demux yarn lint
- # - docker run demux yarn test  # no tests yet
   - docker run monstereos/frontend yarn lint
