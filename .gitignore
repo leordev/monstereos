@@ -25,3 +25,6 @@ temp
 
 # wallet keys
 keys
+
+# netlify cli
+.netlify/
