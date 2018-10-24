@@ -20,7 +20,9 @@ before_install:
 
 install:
   - docker-compose build demux
+  - docker build -t monstereos/frontend ./services/frontend
 
 script:
   - docker run demux yarn lint
-  - docker run demux yarn test
+ # - docker run demux yarn test  # no tests yet
+  - docker run monstereos/frontend yarn lint
